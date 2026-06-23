@@ -1,0 +1,22 @@
+# Task List - Reports & Statistics (Reportes y Estadísticas)
+
+- [x] Register route `estadisticas` in `routes/web.php`
+- [x] Create `EstadisticaController.php` with aggregation query logic:
+  - [x] Implement authorization logic `authorizeEstadisticaAction`
+  - [x] Fetch KPIs (revenue, orders count, low stock count, pending claims)
+  - [x] Fetch Top 5 best selling products (quantity sold)
+  - [x] Fetch Sales by Category sums
+  - [x] Fetch Daily Sales Trend line points
+  - [x] Fetch Claims Status count breakdown
+  - [x] Log audit trail `ver_reportes`
+- [x] Create Vue view `resources/js/pages/estadisticas/Index.vue`:
+  - [x] Date pickers for start/end date range
+  - [x] Summary cards with hover scaling
+  - [x] Custom SVG Line Chart for daily sales trend
+  - [x] Custom SVG Bar Chart for sales by category
+  - [x] Custom SVG Donut Chart for claims status ratio
+  - [x] Top 5 products table with miniature photo previews
+  - [x] Print preview styling using CSS media print queries
+- [x] Write and run feature tests in `StatisticsManagementTest.php`
+- [x] Format PHP code style (Pint verified)
+- [x] Run full test suite to verify no regressions
