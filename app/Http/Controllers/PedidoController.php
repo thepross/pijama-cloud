@@ -355,6 +355,22 @@ class PedidoController extends Controller
                 'observacion' => $roleName !== 'Cliente' && $request->has('observacion') ? $request->observacion : $pedido->observacion,
             ]);
 
+            // Automatic shipment creation hook
+            if ($newStatus === 'confirmado' && $oldStatus !== 'confirmado') {
+                $hasShipment = \App\Models\Envio::where('id_pedido', $pedido->id)
+                    ->where('state', 'activo')
+                    ->exists();
+                if (!$hasShipment) {
+                    \App\Models\Envio::create([
+                        'id_pedido' => $pedido->id,
+                        'id_distribuidor' => null,
+                        'direccion_entrega' => $pedido->cliente->direccion ?? 'Sin dirección especificada',
+                        'estado_envio' => 'pendiente',
+                        'state' => 'activo',
+                    ]);
+                }
+            }
+
             // Audit Log
             $event = ($newStatus === 'cancelado') ? 'cancelar_pedido' : 'actualizar_estado_pedido';
             Bitacora::create([

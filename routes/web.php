@@ -10,6 +10,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PuntuacionController;
 use App\Http\Controllers\OfertaController;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\EnvioController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('productos', ProductoController::class);
     Route::resource('ofertas', OfertaController::class);
     Route::resource('pedidos', PedidoController::class);
+    Route::resource('envios', EnvioController::class);
 });
 
 require __DIR__.'/settings.php';
