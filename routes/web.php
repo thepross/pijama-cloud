@@ -15,6 +15,7 @@ use App\Http\Controllers\ReclamoController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BitacoraController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -36,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('pagos', PagoController::class);
     Route::post('pagos/{pago}/simular-callback', [PagoController::class, 'simularCallback'])->name('pagos.simular-callback');
     Route::get('estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
+    Route::get('bitacoras', [BitacoraController::class, 'index'])->name('bitacoras.index');
 });
 
 require __DIR__.'/settings.php';
