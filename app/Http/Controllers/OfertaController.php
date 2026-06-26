@@ -14,21 +14,27 @@ use Illuminate\Http\RedirectResponse;
 
 class OfertaController extends Controller
 {
-    /**
-     * Authorize offer management actions.
-     */
     private function authorizeOfferAction(string $action): void
     {
-        if (!Auth::check() || !Auth::user()->role->permissions()->where('ruta', 'ofertas')->exists()) {
-            abort(403, 'No tienes permiso para ver ofertas.');
+        if (!Auth::check()) {
+            abort(403, 'No autenticado.');
         }
 
-        $modifyingActions = ['create', 'store', 'edit', 'update', 'destroy'];
-        if (in_array($action, $modifyingActions)) {
-            $roleName = Auth::user()->role->nombre;
-            if ($roleName !== 'Administrador') {
-                abort(403, 'No tienes permiso para modificar ofertas.');
-            }
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'ofertas.ver',
+            'show'    => 'ofertas.ver',
+            'create'  => 'ofertas.crear',
+            'store'   => 'ofertas.crear',
+            'edit'    => 'ofertas.editar',
+            'update'  => 'ofertas.editar',
+            'destroy' => 'ofertas.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'ofertas.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre ofertas.');
         }
     }
 

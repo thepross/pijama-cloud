@@ -88,8 +88,7 @@ const submit = () => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Tag class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Editar Oferta: "{{ props.oferta.nombre }}"
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -125,7 +124,7 @@ const submit = () => {
                                 >
                                     <option value="" disabled>Selecciona un producto textil...</option>
                                     <option v-for="prod in props.productos" :key="prod.id" :value="prod.id">
-                                        {{ prod.nombre }} ({{ prod.codigo_qr }}) - ${{ Number(prod.precio_venta).toFixed(2) }}
+                                        {{ prod.nombre }} ({{ prod.codigo_qr }}) - Bs. {{ Number(prod.precio_venta).toFixed(2) }}
                                     </option>
                                 </select>
                                 <InputError :message="form.errors.id_producto" />
@@ -236,19 +235,19 @@ const submit = () => {
 
                                 <div class="pt-2 border-t border-border flex justify-between items-baseline">
                                     <span class="text-xs text-muted-foreground">Precio Base:</span>
-                                    <span class="font-mono text-sm text-muted-foreground line-through">${{ Number(selectedProduct.precio_venta).toFixed(2) }}</span>
+                                     <span class="font-mono text-sm text-muted-foreground line-through">Bs. {{ Number(selectedProduct.precio_venta).toFixed(2) }}</span>
                                 </div>
 
                                 <div class="flex justify-between items-baseline">
                                     <span class="text-xs text-muted-foreground">Descuento aplicado:</span>
                                     <span class="font-bold text-emerald-600 dark:text-emerald-400">
-                                        {{ form.tipo_descuento === 'porcentaje' ? `${Number(form.valor_descuento || 0)}%` : `$${Number(form.valor_descuento || 0).toFixed(2)}` }}
+                                        {{ form.tipo_descuento === 'porcentaje' ? `${Number(form.valor_descuento || 0)}%` : `Bs. ${Number(form.valor_descuento || 0).toFixed(2)}` }}
                                     </span>
                                 </div>
 
                                 <div class="pt-2 border-t border-border flex justify-between items-baseline">
                                     <span class="text-sm font-bold text-foreground">Precio con Oferta:</span>
-                                    <span class="font-mono text-lg font-black text-primary">${{ Number(tentativeFinalPrice).toFixed(2) }}</span>
+                                    <span class="font-mono text-lg font-black text-primary">Bs. {{ Number(tentativeFinalPrice).toFixed(2) }}</span>
                                 </div>
                             </div>
                             <div v-else class="text-center py-12 text-xs text-muted-foreground italic">

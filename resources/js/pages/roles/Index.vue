@@ -69,15 +69,14 @@ const deleteRole = () => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Shield class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Gestión de Roles
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
                         Crea, modifica y gestiona los roles y perfiles de acceso (Matriz de Accesos) de Pijamas Cloud.
                     </p>
                 </div>
-                <div>
+                <div v-if="$page.props.auth.permissions.includes('roles.crear')">
                     <Link :href="route('roles.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform">
                             <Plus class="h-4 w-4" />
@@ -140,14 +139,14 @@ const deleteRole = () => {
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <Link :href="route('roles.edit', role.id)">
+                                        <Link v-if="$page.props.auth.permissions.includes('roles.editar')" :href="route('roles.edit', role.id)">
                                             <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Editar rol y permisos">
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
                                         <!-- Disable delete for essential roles -->
                                         <Button
-                                            v-if="!['Administrador', 'Cliente'].includes(role.nombre)"
+                                            v-if="$page.props.auth.permissions.includes('roles.eliminar') && !['Administrador', 'Cliente'].includes(role.nombre)"
                                             @click="confirmDelete(role)"
                                             variant="ghost"
                                             size="sm"

@@ -21,18 +21,8 @@ class EstadisticaController extends Controller
      */
     public function index(Request $request): Response
     {
-        // 1. Authorize access: must be authenticated and have the 'estadisticas' permission
-        if (!Auth::check()) {
-            abort(401, 'No autenticado.');
-        }
-
-        if (!Auth::user()->role->permissions()->where('ruta', 'estadisticas')->exists()) {
+        if (!Auth::user()->role->hasPermission('estadisticas.ver')) {
             abort(403, 'No tienes permiso para acceder a estadísticas.');
-        }
-
-        $roleName = Auth::user()->role->nombre;
-        if (!in_array($roleName, ['Administrador', 'Vendedor'])) {
-            abort(403, 'No tienes permiso para ver reportes.');
         }
 
         // 2. Validate input filters in Spanish

@@ -25,30 +25,28 @@ class EnvioController extends Controller
             abort(401, 'No autenticado.');
         }
 
-        // Verify route permission for 'envios'
-        if (!Auth::user()->role->permissions()->where('ruta', 'envios')->exists()) {
-            abort(403, 'No tienes permiso para acceder a envíos.');
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'envios.ver',
+            'show'    => 'envios.ver',
+            'create'  => 'envios.crear',
+            'store'   => 'envios.crear',
+            'edit'    => 'envios.editar',
+            'update'  => 'envios.editar',
+            'destroy' => 'envios.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'envios.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre envíos.');
         }
 
-        $roleName = Auth::user()->role->nombre;
-
-        if ($action === 'create' || $action === 'store') {
-            if (!in_array($roleName, ['Administrador', 'Vendedor'])) {
-                abort(403, 'Solo el personal de ventas o administración puede registrar envíos.');
-            }
-        }
-
-        if ($action === 'edit' || $action === 'update') {
-            if ($roleName === 'Distribuidor' && $envio) {
-                if ($envio->id_distribuidor !== Auth::id()) {
-                    abort(403, 'No puedes gestionar envíos asignados a otros distribuidores.');
-                }
-            }
-        }
-
-        if ($action === 'destroy') {
-            if ($roleName !== 'Administrador') {
-                abort(403, 'Solo los administradores pueden eliminar registros de envíos.');
+        // Distributor shipment assignment restriction
+        $roleName = $user->role->nombre;
+        if ($roleName === 'Distribuidor' && $envio) {
+            if ($envio->id_distribuidor !== $user->id) {
+                abort(403, 'No tienes permiso para gestionar envíos asignados a otros distribuidores.');
             }
         }
     }

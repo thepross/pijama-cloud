@@ -27,6 +27,10 @@ class DashboardController extends Controller
             abort(401, 'No autenticado.');
         }
 
+        if (!Auth::user()->role->hasPermission('dashboard.ver')) {
+            abort(403, 'No tienes permiso para acceder al panel de control.');
+        }
+
         $user = Auth::user();
         $roleName = $user->role->nombre;
 

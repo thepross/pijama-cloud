@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
     TrendingUp, ShoppingBag, AlertCircle, AlertTriangle, Calendar, 
-    Printer, RefreshCw, DollarSign, Award, Shirt 
+    Printer, RefreshCw, Banknote, Award, Shirt 
 } from 'lucide-vue-next';
 
 interface KpiType {
@@ -144,8 +144,7 @@ const printReport = () => {
             <!-- Header section (Hidden in print) -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <TrendingUp class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Reportes y Estadísticas
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -213,11 +212,11 @@ const printReport = () => {
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Ingresos Totales</span>
                         <p class="font-mono text-xl sm:text-2xl font-black text-foreground">
-                            ${{ Number(props.kpis.ingresos_totales).toFixed(2) }}
-                        </p>
-                    </div>
-                    <div class="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                        <DollarSign class="h-5 w-5" />
+                        Bs. {{ Number(props.kpis.ingresos_totales).toFixed(2) }}
+                    </p>
+                </div>
+                <div class="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Banknote class="h-5 w-5" />
                     </div>
                 </div>
 
@@ -355,7 +354,7 @@ const printReport = () => {
                             <div class="flex items-center justify-between text-xs font-semibold">
                                 <span class="text-foreground block">{{ item.categoria }}</span>
                                 <span class="font-mono text-muted-foreground block">
-                                    ${{ Number(item.ventas).toFixed(2) }}
+                                    Bs. {{ Number(item.ventas).toFixed(2) }}
                                 </span>
                             </div>
                             <!-- Writable HTML progress bar -->
@@ -419,10 +418,10 @@ const printReport = () => {
                                             {{ item.categoria }}
                                         </span>
                                     </td>
-                                    <td class="p-3 font-mono text-muted-foreground">${{ Number(item.precio).toFixed(2) }}</td>
+                                    <td class="p-3 font-mono text-muted-foreground">Bs. {{ Number(item.precio).toFixed(2) }}</td>
                                     <td class="p-3 font-semibold text-foreground">{{ item.cantidad_vendida }} uds</td>
                                     <td class="p-3 font-mono font-bold text-foreground text-right">
-                                        ${{ Number(item.ingresos).toFixed(2) }}
+                                        Bs. {{ Number(item.ingresos).toFixed(2) }}
                                     </td>
                                 </tr>
                             </tbody>

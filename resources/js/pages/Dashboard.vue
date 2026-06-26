@@ -5,7 +5,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import {
     TrendingUp, Users, Package, AlertCircle, ShoppingCart,
-    Star, MessageSquare, Truck, CheckCircle, Clock, DollarSign,
+    Star, MessageSquare, Truck, CheckCircle, Clock, Banknote,
     BarChart2, Activity, ArrowUpRight
 } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -169,7 +169,7 @@ const donutPaths = computed(() => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(n: number): string {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
+    return 'Bs. ' + Number(n).toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 function fmtDate(d: string): string {
@@ -196,8 +196,7 @@ const statusColor: Record<string, string> = {
             <!-- Branded Header Section (Matches Usuarios, Productos, Estadisticas views) -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <BarChart2 class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Panel de Control
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -221,7 +220,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[10px] text-muted-foreground">pedidos activos</p>
                         </div>
                         <div class="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                            <DollarSign class="h-5 w-5" />
+                            <Banknote class="h-5 w-5" />
                         </div>
                     </div>
 
@@ -402,7 +401,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[10px] text-muted-foreground">en compras realizadas</p>
                         </div>
                         <div class="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                            <DollarSign class="h-5 w-5" />
+                            <Banknote class="h-5 w-5" />
                         </div>
                     </div>
 

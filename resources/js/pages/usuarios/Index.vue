@@ -76,15 +76,14 @@ const deleteUser = () => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Users class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Gestión de Usuarios
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
                         Registra, edita y supervisa las cuentas de clientes, distribuidores, operadores y administradores.
                     </p>
                 </div>
-                <div>
+                <div v-if="$page.props.auth.permissions.includes('usuarios.crear')">
                     <Link :href="route('usuarios.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform">
                             <UserPlus class="h-4 w-4" />
@@ -176,14 +175,14 @@ const deleteUser = () => {
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <Link :href="route('usuarios.edit', user.id)">
+                                        <Link v-if="$page.props.auth.permissions.includes('usuarios.editar')" :href="route('usuarios.edit', user.id)">
                                             <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Editar usuario">
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
                                         <!-- Prevent self deletion -->
                                         <Button
-                                            v-if="$page.props.auth.user.id !== user.id"
+                                            v-if="$page.props.auth.permissions.includes('usuarios.eliminar') && $page.props.auth.user.id !== user.id"
                                             @click="confirmDelete(user)"
                                             variant="ghost"
                                             size="sm"

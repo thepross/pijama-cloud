@@ -11,12 +11,9 @@ use Inertia\Response;
 
 class BitacoraController extends Controller
 {
-    /**
-     * Authorize access to bitacora.
-     */
     private function authorizeBitacoraAccess(): void
     {
-        if (!Auth::check() || !Auth::user()->role->permissions()->where('ruta', 'bitacoras')->exists()) {
+        if (!Auth::check() || !Auth::user()->role->hasPermission('bitacoras.ver')) {
             abort(403, 'No tienes permiso para ver la bitácora del sistema.');
         }
     }

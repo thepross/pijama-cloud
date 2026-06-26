@@ -36,7 +36,11 @@ export interface User {
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
-    updated_at: string;
+    role?: {
+        id: number;
+        nombre: string;
+        state: string;
+    };
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

@@ -29,7 +29,7 @@ class SearchController extends Controller
         }
 
         // 1. Search Users (if authorized)
-        if ($user->role && $user->role->permissions()->where('ruta', 'usuarios')->exists()) {
+        if ($user->role && $user->role->hasPermission('usuarios.ver')) {
             $users = User::query()
                 ->where(function ($q) use ($query) {
                     $q->where('username', 'like', "%{$query}%")
@@ -57,7 +57,7 @@ class SearchController extends Controller
         }
 
         // 2. Search Roles (if authorized)
-        if ($user->role && $user->role->permissions()->where('ruta', 'roles')->exists()) {
+        if ($user->role && $user->role->hasPermission('roles.ver')) {
             $roles = Role::query()
                 ->where(function ($q) use ($query) {
                     $q->where('nombre', 'like', "%{$query}%")
@@ -80,7 +80,7 @@ class SearchController extends Controller
         }
 
         // 3. Search Products (if authorized)
-        if ($user->role && $user->role->permissions()->where('ruta', 'productos')->exists()) {
+        if ($user->role && $user->role->hasPermission('productos.ver')) {
             $productos = Producto::query()
                 ->where(function ($q) use ($query) {
                     $q->where('nombre', 'like', "%{$query}%")

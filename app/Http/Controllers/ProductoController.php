@@ -13,21 +13,27 @@ use Illuminate\Http\RedirectResponse;
 
 class ProductoController extends Controller
 {
-    /**
-     * Authorize product management actions.
-     */
     private function authorizeProductAction(string $action): void
     {
-        if (!Auth::check() || !Auth::user()->role->permissions()->where('ruta', 'productos')->exists()) {
-            abort(403, 'No tienes permiso para ver productos.');
+        if (!Auth::check()) {
+            abort(403, 'No autenticado.');
         }
 
-        $modifyingActions = ['create', 'store', 'edit', 'update', 'destroy'];
-        if (in_array($action, $modifyingActions)) {
-            $roleName = Auth::user()->role->nombre;
-            if (!in_array($roleName, ['Administrador', 'Vendedor'])) {
-                abort(403, 'No tienes permiso para modificar productos.');
-            }
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'productos.ver',
+            'show'    => 'productos.ver',
+            'create'  => 'productos.crear',
+            'store'   => 'productos.crear',
+            'edit'    => 'productos.editar',
+            'update'  => 'productos.editar',
+            'destroy' => 'productos.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'productos.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre productos.');
         }
     }
 

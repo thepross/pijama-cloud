@@ -24,36 +24,28 @@ class PedidoController extends Controller
             abort(401, 'No autenticado.');
         }
 
-        // Verify the user has access permission for 'pedidos' in general
-        if (!Auth::user()->role->permissions()->where('ruta', 'pedidos')->exists()) {
-            abort(403, 'No tienes permiso para acceder a pedidos.');
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'pedidos.ver',
+            'show'    => 'pedidos.ver',
+            'create'  => 'pedidos.crear',
+            'store'   => 'pedidos.crear',
+            'edit'    => 'pedidos.editar',
+            'update'  => 'pedidos.editar',
+            'destroy' => 'pedidos.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'pedidos.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre pedidos.');
         }
 
-        $roleName = Auth::user()->role->nombre;
-
-        if ($action === 'create' || $action === 'store') {
-            if ($roleName !== 'Cliente') {
-                abort(403, 'Solo los clientes pueden crear nuevos pedidos.');
-            }
-        }
-
-        if ($action === 'show' && $pedido) {
-            if ($roleName === 'Cliente' && $pedido->id_cliente !== Auth::id()) {
-                abort(403, 'No tienes permiso para ver este pedido.');
-            }
-        }
-
-        if ($action === 'update' && $pedido) {
-            if ($roleName === 'Cliente') {
-                if ($pedido->id_cliente !== Auth::id()) {
-                    abort(403, 'No puedes modificar este pedido.');
-                }
-            }
-        }
-
-        if ($action === 'destroy') {
-            if ($roleName !== 'Administrador') {
-                abort(403, 'Solo los administradores pueden eliminar pedidos.');
+        // Ownership enforcement for clients
+        $roleName = $user->role->nombre;
+        if ($roleName === 'Cliente' && $pedido) {
+            if ($pedido->id_cliente !== $user->id) {
+                abort(403, 'No tienes acceso a este pedido.');
             }
         }
     }

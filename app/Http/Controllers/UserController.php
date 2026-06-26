@@ -19,10 +19,27 @@ class UserController extends Controller
     /**
      * Authorize user management routes.
      */
-    private function authorizeUserManagement(): void
+    private function authorizeUserAction(string $action): void
     {
-        if (!Auth::check() || !Auth::user()->role->permissions()->where('ruta', 'usuarios')->exists()) {
-            abort(403, 'No tienes permiso para gestionar usuarios.');
+        if (!Auth::check()) {
+            abort(403, 'No autenticado.');
+        }
+
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'usuarios.ver',
+            'show'    => 'usuarios.ver',
+            'create'  => 'usuarios.crear',
+            'store'   => 'usuarios.crear',
+            'edit'    => 'usuarios.editar',
+            'update'  => 'usuarios.editar',
+            'destroy' => 'usuarios.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'usuarios.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre usuarios.');
         }
     }
 
@@ -31,7 +48,7 @@ class UserController extends Controller
      */
     public function index(Request $request): Response
     {
-        $this->authorizeUserManagement();
+        $this->authorizeUserAction('index');
 
         $search = $request->input('search');
         $roleId = $request->input('role_id');
@@ -73,7 +90,7 @@ class UserController extends Controller
      */
     public function create(): Response
     {
-        $this->authorizeUserManagement();
+        $this->authorizeUserAction('create');
 
         $roles = Role::where('state', 'activo')->get(['id', 'nombre']);
 
@@ -87,7 +104,7 @@ class UserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->authorizeUserManagement();
+        $this->authorizeUserAction('store');
 
         $request->validate([
             'username' => 'required|string|max:255|unique:usuarios,username',
@@ -150,7 +167,7 @@ class UserController extends Controller
      */
     public function edit(User $usuario): Response
     {
-        $this->authorizeUserManagement();
+        $this->authorizeUserAction('edit');
 
         if ($usuario->state === 'inactivo') {
             abort(404, 'El usuario no se encuentra activo.');
@@ -169,7 +186,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $usuario): RedirectResponse
     {
-        $this->authorizeUserManagement();
+        $this->authorizeUserAction('update');
 
         if ($usuario->state === 'inactivo') {
             abort(404, 'El usuario no se encuentra activo.');
@@ -257,7 +274,7 @@ class UserController extends Controller
      */
     public function destroy(Request $request, User $usuario): RedirectResponse
     {
-        $this->authorizeUserManagement();
+        $this->authorizeUserAction('destroy');
 
         if ($usuario->state === 'inactivo') {
             return to_route('usuarios.index')->with('error', 'El usuario ya se encuentra inactivo.');

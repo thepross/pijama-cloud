@@ -26,34 +26,27 @@ class ReclamoController extends Controller
             abort(401, 'No autenticado.');
         }
 
-        // Verify route permission for 'reclamos'
-        if (!Auth::user()->role->permissions()->where('ruta', 'reclamos')->exists()) {
-            abort(403, 'No tienes permiso para acceder a reclamos.');
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'reclamos.ver',
+            'show'    => 'reclamos.ver',
+            'create'  => 'reclamos.crear',
+            'store'   => 'reclamos.crear',
+            'update'  => 'reclamos.editar',
+            'destroy' => 'reclamos.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'reclamos.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre reclamos.');
         }
 
-        $roleName = Auth::user()->role->nombre;
-
-        if ($action === 'create' || $action === 'store') {
-            if ($roleName !== 'Cliente') {
-                abort(403, 'Solo los clientes pueden registrar reclamos.');
-            }
-        }
-
-        if ($action === 'show') {
-            if ($roleName === 'Cliente' && $reclamo && $reclamo->id_cliente !== Auth::id()) {
-                abort(403, 'No tienes permiso para ver este reclamo.');
-            }
-        }
-
-        if ($action === 'update') {
-            if (!in_array($roleName, ['Administrador', 'Vendedor'])) {
-                abort(403, 'Solo el personal autorizado puede responder reclamos.');
-            }
-        }
-
-        if ($action === 'destroy') {
-            if ($roleName !== 'Administrador') {
-                abort(403, 'Solo los administradores pueden eliminar reclamos.');
+        // Ownership enforcement for clients
+        $roleName = $user->role->nombre;
+        if ($roleName === 'Cliente' && $reclamo) {
+            if ($reclamo->id_cliente !== $user->id) {
+                abort(403, 'No tienes acceso a este reclamo.');
             }
         }
     }

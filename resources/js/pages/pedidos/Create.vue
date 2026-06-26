@@ -155,8 +155,7 @@ const submit = () => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <ShoppingBag class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Realizar Nuevo Pedido
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -238,10 +237,10 @@ const submit = () => {
                                     <div class="flex flex-col">
                                         <!-- Price layout -->
                                         <div v-if="getProductPriceDetails(prod).hasDiscount" class="flex flex-col">
-                                            <span class="font-mono text-sm font-black text-foreground">${{ getProductPriceDetails(prod).finalPrice.toFixed(2) }}</span>
-                                            <span class="text-[10px] text-muted-foreground line-through font-mono leading-none">${{ Number(prod.precio_venta).toFixed(2) }}</span>
+                                            <span class="font-mono text-sm font-black text-foreground">Bs. {{ getProductPriceDetails(prod).finalPrice.toFixed(2) }}</span>
+                                            <span class="text-[10px] text-muted-foreground line-through font-mono leading-none">Bs. {{ Number(prod.precio_venta).toFixed(2) }}</span>
                                         </div>
-                                        <span v-else class="font-mono text-sm font-black text-foreground">${{ Number(prod.precio_venta).toFixed(2) }}</span>
+                                        <span v-else class="font-mono text-sm font-black text-foreground">Bs. {{ Number(prod.precio_venta).toFixed(2) }}</span>
                                         <span class="text-[10px] font-semibold text-muted-foreground">Stock: {{ prod.stock }}</span>
                                     </div>
                                     
@@ -284,7 +283,7 @@ const submit = () => {
                                 <div class="flex-1 space-y-1">
                                     <div class="font-semibold text-foreground leading-snug">{{ item.producto.nombre }}</div>
                                     <div class="text-[10px] text-muted-foreground">
-                                        Unit: ${{ getProductPriceDetails(item.producto).finalPrice.toFixed(2) }}
+                                        Unit: Bs. {{ getProductPriceDetails(item.producto).finalPrice.toFixed(2) }}
                                         <span v-if="getProductPriceDetails(item.producto).hasDiscount" class="text-emerald-500 font-bold ml-1">
                                             (Oferta)
                                         </span>
@@ -313,7 +312,7 @@ const submit = () => {
                                 </div>
                                 <div class="flex flex-col items-end gap-1">
                                     <span class="font-mono font-bold">
-                                        ${{ (item.cantidad * getProductPriceDetails(item.producto).finalPrice).toFixed(2) }}
+                                        Bs. {{ (item.cantidad * getProductPriceDetails(item.producto).finalPrice).toFixed(2) }}
                                     </span>
                                     <button
                                         type="button"
@@ -330,7 +329,7 @@ const submit = () => {
                         <div class="pt-4 border-t border-border space-y-4">
                             <div class="flex justify-between items-baseline">
                                 <span class="text-sm font-bold text-foreground">Total del Pedido:</span>
-                                <span class="font-mono text-xl font-black text-primary">${{ cartTotal.toFixed(2) }}</span>
+                                <span class="font-mono text-xl font-black text-primary">Bs. {{ cartTotal.toFixed(2) }}</span>
                             </div>
 
                             <!-- Observations -->

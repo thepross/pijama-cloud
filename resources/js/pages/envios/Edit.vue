@@ -78,8 +78,7 @@ const submit = () => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Truck class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Gestionar Despacho #{{ props.envio.id }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -126,7 +125,7 @@ const submit = () => {
                         <div class="grid gap-2">
                             <Label>Pedido Relacionado</Label>
                             <div class="p-2.5 rounded-xl border bg-muted font-mono font-bold text-muted-foreground">
-                                Pedido #{{ props.envio.id_pedido }} (Total: ${{ Number(props.envio.pedido.total).toFixed(2) }})
+                                Pedido #{{ props.envio.id_pedido }} (Total: Bs. {{ Number(props.envio.pedido.total).toFixed(2) }})
                             </div>
                         </div>
                     </div>

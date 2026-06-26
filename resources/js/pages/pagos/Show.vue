@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
     ArrowLeft, CheckCircle, Ban, AlertTriangle, LoaderCircle, Printer, QrCode, 
-    ShieldAlert, DollarSign, CreditCard, Clock, Calendar, ShoppingBag, User 
+    ShieldAlert, Banknote, CreditCard, Clock, Calendar, ShoppingBag, User 
 } from 'lucide-vue-next';
 
 interface UserType {
@@ -145,9 +145,8 @@ const printReceipt = () => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <CreditCard class="h-8 w-8 text-primary" />
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <h1 class="text-3xl font-bold tracking-tight text-foreground">
                             Recibo de Pago #{{ props.pago.id }}
                         </h1>
                         <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
@@ -206,7 +205,7 @@ const printReceipt = () => {
                             <div class="flex justify-between items-baseline pt-2">
                                 <span class="text-sm text-muted-foreground">Monto Abonado</span>
                                 <span class="font-mono text-3xl font-black text-foreground">
-                                    ${{ Number(props.pago.monto).toFixed(2) }}
+                                    Bs. {{ Number(props.pago.monto).toFixed(2) }}
                                 </span>
                             </div>
                         </div>
@@ -234,7 +233,7 @@ const printReceipt = () => {
                                     Pedido #{{ props.pago.id_pedido }}
                                 </p>
                                 <p class="text-xs text-muted-foreground">
-                                    Monto original del pedido: ${{ Number(props.pago.pedido?.total).toFixed(2) }}
+                                    Monto original del pedido: Bs. {{ Number(props.pago.pedido?.total).toFixed(2) }}
                                 </p>
                             </div>
                         </div>
@@ -256,7 +255,7 @@ const printReceipt = () => {
                             <div class="col-span-2 sm:col-span-1">
                                 <span class="text-muted-foreground font-bold uppercase tracking-wider block">Saldo Pendiente Restante</span>
                                 <span class="font-mono font-bold text-foreground block mt-0.5">
-                                    ${{ Number(props.pago.saldo_pendiente).toFixed(2) }}
+                                    Bs. {{ Number(props.pago.saldo_pendiente).toFixed(2) }}
                                 </span>
                             </div>
                         </div>
@@ -324,19 +323,19 @@ const printReceipt = () => {
                         class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 animate-in slide-in-from-right-2 fade-in"
                     >
                         <h3 class="text-sm font-bold text-foreground flex items-center gap-1.5">
-                            <DollarSign class="h-5 w-5 text-primary" />
+                            <Banknote class="h-5 w-5 text-primary" />
                             Confirmar Efectivo
                         </h3>
 
                         <!-- Client view -->
                         <div v-if="isClient" class="text-xs leading-relaxed text-muted-foreground p-4 bg-muted/40 border rounded-xl">
-                            ⏳ Tu pago está registrado y pendiente de confirmación física de efectivo. Por favor, entrega el monto de <strong>${{ Number(props.pago.monto).toFixed(2) }}</strong> a tu vendedor asignado en tienda para acreditar tu abono.
+                            ⏳ Tu pago está registrado y pendiente de confirmación física de efectivo. Por favor, entrega el monto de <strong>Bs. {{ Number(props.pago.monto).toFixed(2) }}</strong> a tu vendedor asignado en tienda para acreditar tu abono.
                         </div>
 
                         <!-- Staff form view -->
                         <div v-else class="space-y-4">
                             <p class="text-xs text-muted-foreground">
-                                Confirma que has recibido los <strong>${{ Number(props.pago.monto).toFixed(2) }}</strong> en efectivo físicamente.
+                                Confirma que has recibido los <strong>Bs. {{ Number(props.pago.monto).toFixed(2) }}</strong> en efectivo físicamente.
                             </p>
                             <div class="space-y-2">
                                 <Label for="manual_obs" class="text-xs font-semibold text-foreground">Comentario de conciliación</Label>

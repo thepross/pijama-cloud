@@ -26,41 +26,28 @@ class PagoController extends Controller
             abort(401, 'No autenticado.');
         }
 
-        // Verify route permission for 'pagos'
-        if (!Auth::user()->role->permissions()->where('ruta', 'pagos')->exists()) {
-            abort(403, 'No tienes permiso para acceder a pagos.');
+        $user = Auth::user();
+        $mapping = [
+            'index'           => 'pagos.ver',
+            'show'            => 'pagos.ver',
+            'create'          => 'pagos.crear',
+            'store'           => 'pagos.crear',
+            'update'          => 'pagos.editar',
+            'simularCallback' => 'pagos.editar',
+            'destroy'         => 'pagos.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'pagos.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre pagos.');
         }
 
-        $roleName = Auth::user()->role->nombre;
-
-        if ($action === 'create' || $action === 'store') {
-            // Both Clients and Staff can register payments
-            // (e.g. Clients pay for their own orders; Sellers register cash payments directly)
-        }
-
-        if ($action === 'show' && $pago) {
-            if ($roleName === 'Cliente' && $pago->pedido->id_cliente !== Auth::id()) {
-                abort(403, 'No tienes permiso para ver este pago.');
-            }
-        }
-
-        if ($action === 'update' || $action === 'simularCallback') {
-            if ($action === 'update') {
-                // Manual updates (e.g. confirming cash payments) are staff only
-                if (!in_array($roleName, ['Administrador', 'Vendedor'])) {
-                    abort(403, 'Solo el personal autorizado puede confirmar pagos manualmente.');
-                }
-            } else {
-                // QR simulation callback can be triggered by client (owner) or staff
-                if ($roleName === 'Cliente' && $pago && $pago->pedido->id_cliente !== Auth::id()) {
-                    abort(403, 'No puedes confirmar un pago de otro cliente.');
-                }
-            }
-        }
-
-        if ($action === 'destroy') {
-            if ($roleName !== 'Administrador') {
-                abort(403, 'Solo los administradores pueden eliminar registros de pagos.');
+        // Ownership enforcement for clients
+        $roleName = $user->role->nombre;
+        if ($roleName === 'Cliente' && $pago) {
+            if ($pago->pedido && $pago->pedido->id_cliente !== $user->id) {
+                abort(403, 'No tienes acceso a este pago.');
             }
         }
     }

@@ -122,8 +122,7 @@ const getMethodLabel = (method: string) => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <CreditCard class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         {{ isClient ? 'Mis Pagos y Cuotas' : 'Gestión de Pagos' }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -132,7 +131,7 @@ const getMethodLabel = (method: string) => {
                             : 'Monitorea transacciones, confirma recepciones de efectivo y concilia abonos.' }}
                     </p>
                 </div>
-                <div>
+                <div v-if="$page.props.auth.permissions.includes('pagos.crear')">
                     <Link :href="route('pagos.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
                             <Plus class="h-4 w-4" />
@@ -229,7 +228,7 @@ const getMethodLabel = (method: string) => {
                                     <span v-else class="text-xs text-muted-foreground italic">Sin cliente</span>
                                 </td>
                                 <td class="p-4 font-mono font-black text-foreground">
-                                    ${{ Number(payment.monto).toFixed(2) }}
+                                    Bs. {{ Number(payment.monto).toFixed(2) }}
                                 </td>
                                 <td class="p-4">
                                     <span class="text-xs font-medium text-foreground">
@@ -253,7 +252,7 @@ const getMethodLabel = (method: string) => {
                                             </Button>
                                         </Link>
                                         <Button
-                                            v-if="isAdmin"
+                                            v-if="$page.props.auth.permissions.includes('pagos.eliminar')"
                                             @click="confirmDelete(payment)"
                                             variant="ghost"
                                             size="sm"

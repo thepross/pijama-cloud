@@ -54,8 +54,7 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <AlertTriangle class="h-7 w-7 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Registrar Reclamo o Comentario
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -103,7 +102,7 @@ const submit = () => {
                                 :key="pedido.id"
                                 :value="pedido.id"
                             >
-                                Pedido #{{ pedido.id }} — {{ pedido.fecha_pedido }} (${{ Number(pedido.total).toFixed(2) }}) [{{ pedido.estado_pedido }}]
+                                Pedido #{{ pedido.id }} — {{ pedido.fecha_pedido }} (Bs. {{ Number(pedido.total).toFixed(2) }}) [{{ pedido.estado_pedido }}]
                             </option>
                         </select>
                         <p class="text-xs text-muted-foreground">

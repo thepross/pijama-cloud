@@ -112,9 +112,8 @@ const getStatusBadge = (status: string) => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <ShoppingBag class="h-8 w-8 text-primary" />
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <h1 class="text-3xl font-bold tracking-tight text-foreground">
                             Pedido #{{ props.pedido.id }}
                         </h1>
                         <p class="text-xs text-muted-foreground mt-0.5">
@@ -198,13 +197,13 @@ const getStatusBadge = (status: string) => {
                                                 <span class="font-mono text-[10px] text-muted-foreground">{{ det.producto.codigo_qr }}</span>
                                             </div>
                                         </td>
-                                        <td class="py-3 font-mono text-muted-foreground">${{ Number(det.precio_venta).toFixed(2) }}</td>
+                                        <td class="py-3 font-mono text-muted-foreground">Bs. {{ Number(det.precio_venta).toFixed(2) }}</td>
                                         <td class="py-3 font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                                            {{ Number(det.descuento) > 0 ? `-$${Number(det.descuento).toFixed(2)}` : '-' }}
+                                            {{ Number(det.descuento) > 0 ? `-Bs. ${Number(det.descuento).toFixed(2)}` : '-' }}
                                         </td>
                                         <td class="py-3 text-center font-bold font-mono">{{ det.cantidad }}</td>
                                         <td class="py-3 text-right font-mono font-bold text-foreground">
-                                            ${{ Number(det.subtotal).toFixed(2) }}
+                                            Bs. {{ Number(det.subtotal).toFixed(2) }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -212,7 +211,7 @@ const getStatusBadge = (status: string) => {
                                     <tr class="border-t border-border/80 font-bold text-sm">
                                         <td colspan="4" class="pt-4 text-right">Total a pagar:</td>
                                         <td class="pt-4 text-right font-mono text-base font-black text-primary">
-                                            ${{ Number(props.pedido.total).toFixed(2) }}
+                                            Bs. {{ Number(props.pedido.total).toFixed(2) }}
                                         </td>
                                     </tr>
                                 </tfoot>

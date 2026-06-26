@@ -67,7 +67,10 @@ const props = defineProps<{
 
 const page = usePage();
 const userRole = computed(() => (page.props.auth as any)?.user?.role?.nombre || '');
-const isStaff = computed(() => ['Administrador', 'Vendedor'].includes(userRole.value));
+const isStaff = computed(() => {
+    const perms = (page.props.auth as any)?.permissions || [];
+    return perms.includes('productos.crear') || perms.includes('productos.editar') || perms.includes('productos.eliminar');
+});
 
 const search = ref(props.filters.search || '');
 const category = ref(props.filters.category || '');
@@ -176,15 +179,14 @@ const calculatePrice = (product: ProductType) => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Shirt class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Catálogo de Productos
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
                         {{ isStaff ? 'Administra el inventario, detalles de compra y códigos de barra de las prendas textiles.' : 'Explora nuestra amplia colección de pijamas y ropa de casa premium.' }}
                     </p>
                 </div>
-                <div v-if="isStaff">
+                <div v-if="$page.props.auth.permissions.includes('productos.crear')">
                     <Link :href="route('productos.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform">
                             <Plus class="h-4 w-4" />
@@ -288,6 +290,37 @@ const calculatePrice = (product: ProductType) => {
                         >
                             ¡Oferta!
                         </div>
+
+                        <!-- Float Edit/Delete Buttons for authorized users -->
+                        <div 
+                            v-if="$page.props.auth.permissions.includes('productos.editar') || $page.props.auth.permissions.includes('productos.eliminar')"
+                            class="absolute top-3 right-3 flex items-center gap-1.5 z-20"
+                            @click.stop
+                        >
+                            <Link 
+                                v-if="$page.props.auth.permissions.includes('productos.editar')" 
+                                :href="route('productos.edit', prod.id)"
+                            >
+                                <Button 
+                                    size="sm" 
+                                    variant="secondary" 
+                                    class="h-8 w-8 p-0 rounded-xl shadow-md border border-border/50 bg-card hover:bg-muted text-foreground"
+                                    title="Editar producto"
+                                >
+                                    <Edit class="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <Button 
+                                v-if="$page.props.auth.permissions.includes('productos.eliminar')" 
+                                size="sm" 
+                                variant="destructive" 
+                                @click="confirmDelete(prod)"
+                                class="h-8 w-8 p-0 rounded-xl shadow-md border border-red-500/20 hover:bg-red-600 text-white"
+                                title="Eliminar producto"
+                            >
+                                <Trash2 class="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
 
                     <!-- Details -->
@@ -336,14 +369,14 @@ const calculatePrice = (product: ProductType) => {
                             <div>
                                 <template v-if="calculatePrice(prod).hasDiscount">
                                     <span class="text-xs text-muted-foreground line-through mr-1.5">
-                                        ${{ calculatePrice(prod).originalPrice }}
+                                        Bs. {{ calculatePrice(prod).originalPrice }}
                                     </span>
                                     <span class="text-lg font-extrabold text-foreground">
-                                        ${{ calculatePrice(prod).finalPrice }}
+                                        Bs. {{ calculatePrice(prod).finalPrice }}
                                     </span>
                                 </template>
                                 <span v-else class="text-lg font-extrabold text-foreground">
-                                    ${{ prod.precio_venta }}
+                                    Bs. {{ prod.precio_venta }}
                                 </span>
                             </div>
                             <Button size="sm" @click.stop class="flex items-center gap-1 rounded-xl">
@@ -423,12 +456,12 @@ const calculatePrice = (product: ProductType) => {
                                         <span>Material: {{ prod.material || '-' }} · Color: {{ prod.color || '-' }}</span>
                                     </div>
                                 </td>
-                                <td class="p-4 font-mono text-muted-foreground">${{ prod.precio_compra }}</td>
+                                <td class="p-4 font-mono text-muted-foreground">Bs. {{ prod.precio_compra }}</td>
                                 <td class="p-4">
                                     <div class="flex flex-col">
-                                        <span class="font-semibold font-mono text-foreground">${{ prod.precio_venta }}</span>
+                                        <span class="font-semibold font-mono text-foreground">Bs. {{ prod.precio_venta }}</span>
                                         <span v-if="calculatePrice(prod).hasDiscount" class="text-[10px] text-red-500 font-bold">
-                                            Desc: ${{ calculatePrice(prod).finalPrice }}
+                                            Desc: Bs. {{ calculatePrice(prod).finalPrice }}
                                         </span>
                                     </div>
                                 </td>
@@ -454,12 +487,13 @@ const calculatePrice = (product: ProductType) => {
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <Link :href="route('productos.edit', prod.id)">
+                                        <Link v-if="$page.props.auth.permissions.includes('productos.editar')" :href="route('productos.edit', prod.id)">
                                             <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Editar producto">
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
                                         <Button
+                                            v-if="$page.props.auth.permissions.includes('productos.eliminar')"
                                             @click="confirmDelete(prod)"
                                             variant="ghost"
                                             size="sm"

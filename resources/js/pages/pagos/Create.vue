@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/InputError.vue';
-import { ArrowLeft, Save, LoaderCircle, Info, CreditCard, DollarSign, QrCode } from 'lucide-vue-next';
+import { ArrowLeft, Save, LoaderCircle, Info, CreditCard, Banknote, QrCode } from 'lucide-vue-next';
 
 interface OrderOption {
     id: number;
@@ -106,8 +106,7 @@ const submit = () => {
                     </Button>
                 </Link>
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <CreditCard class="h-7 w-7 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Registrar Nuevo Pago
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -138,7 +137,7 @@ const submit = () => {
                                         :key="pedido.id"
                                         :value="pedido.id"
                                     >
-                                        Pedido #{{ pedido.id }} — {{ pedido.fecha_pedido }} (Saldo: ${{ Number(pedido.saldo_pendiente).toFixed(2) }})
+                                        Pedido #{{ pedido.id }} — {{ pedido.fecha_pedido }} (Saldo: Bs. {{ Number(pedido.saldo_pendiente).toFixed(2) }})
                                     </option>
                                 </select>
                                 <InputError :message="form.errors.id_pedido" />
@@ -151,15 +150,15 @@ const submit = () => {
                             >
                                 <div class="space-y-0.5">
                                     <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Total Pedido</span>
-                                    <p class="font-mono text-sm font-bold text-foreground">${{ Number(selectedOrder.total).toFixed(2) }}</p>
+                                    <p class="font-mono text-sm font-bold text-foreground">Bs. {{ Number(selectedOrder.total).toFixed(2) }}</p>
                                 </div>
                                 <div class="space-y-0.5">
                                     <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide font-medium">Abonado</span>
-                                    <p class="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">${{ Number(selectedOrder.total_pagado).toFixed(2) }}</p>
+                                    <p class="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">Bs. {{ Number(selectedOrder.total_pagado).toFixed(2) }}</p>
                                 </div>
                                 <div class="space-y-0.5">
-                                    <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Saldo Pendiente</span>
-                                    <p class="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">${{ Number(selectedOrder.saldo_pendiente).toFixed(2) }}</p>
+                                    <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide font-medium">Saldo Pendiente</span>
+                                    <p class="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">Bs. {{ Number(selectedOrder.saldo_pendiente).toFixed(2) }}</p>
                                 </div>
                             </div>
 
@@ -252,7 +251,7 @@ const submit = () => {
                                         ]"
                                     >
                                         <input type="radio" value="efectivo" v-model="form.tipo_pago" class="sr-only" />
-                                        <DollarSign class="h-6 w-6 text-primary" />
+                                        <Banknote class="h-6 w-6 text-primary" />
                                         <span class="text-xs font-bold">💵 Efectivo</span>
                                         <span class="text-[10px] text-muted-foreground text-center leading-tight">Manual / En Tienda</span>
                                     </label>

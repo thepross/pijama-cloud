@@ -18,142 +18,289 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Roles
-        $adminRole = Role::create([
-            'nombre' => 'Administrador',
-            'descripcion' => 'Administrador del sistema con acceso total',
-            'state' => 'activo',
-        ]);
+        $adminRole = Role::firstOrCreate(
+            ['nombre' => 'Administrador'],
+            [
+                'descripcion' => 'Administrador del sistema con acceso total',
+                'state' => 'activo',
+            ]
+        );
 
-        $clienteRole = Role::create([
-            'nombre' => 'Cliente',
-            'descripcion' => 'Cliente del negocio que realiza compras y califica productos',
-            'state' => 'activo',
-        ]);
+        $clienteRole = Role::firstOrCreate(
+            ['nombre' => 'Cliente'],
+            [
+                'descripcion' => 'Cliente del negocio que realiza compras y califica productos',
+                'state' => 'activo',
+            ]
+        );
 
-        $distribuidorRole = Role::create([
-            'nombre' => 'Distribuidor',
-            'descripcion' => 'Distribuidor encargado de realizar los envíos',
-            'state' => 'activo',
-        ]);
+        $distribuidorRole = Role::firstOrCreate(
+            ['nombre' => 'Distribuidor'],
+            [
+                'descripcion' => 'Distribuidor encargado de realizar los envíos',
+                'state' => 'activo',
+            ]
+        );
 
-        $vendedorRole = Role::create([
-            'nombre' => 'Vendedor',
-            'descripcion' => 'Vendedor encargado de gestionar pedidos, reclamos y productos',
-            'state' => 'activo',
-        ]);
+        $vendedorRole = Role::firstOrCreate(
+            ['nombre' => 'Vendedor'],
+            [
+                'descripcion' => 'Vendedor encargado de gestionar pedidos, reclamos y productos',
+                'state' => 'activo',
+            ]
+        );
 
         // 2. Create Permissions (Menus)
-        $permDashboard = Permiso::create([
-            'nombre' => 'Dashboard',
-            'descripcion' => 'Acceso al panel de control principal',
-            'ruta' => 'dashboard',
-            'icono' => 'LayoutDashboard',
-            'orden' => 1,
-        ]);
+        $permDashboard = Permiso::firstOrCreate(
+            ['ruta' => 'dashboard'],
+            [
+                'nombre' => 'Dashboard',
+                'descripcion' => 'Acceso al panel de control principal',
+                'icono' => 'LayoutDashboard',
+                'orden' => 1,
+            ]
+        );
 
-        $permProductos = Permiso::create([
-            'nombre' => 'Productos',
-            'descripcion' => 'Catálogo y gestión de productos',
-            'ruta' => 'productos',
-            'icono' => 'Shirt',
-            'orden' => 2,
-        ]);
+        $permProductos = Permiso::firstOrCreate(
+            ['ruta' => 'productos'],
+            [
+                'nombre' => 'Productos',
+                'descripcion' => 'Catálogo y gestión de productos',
+                'icono' => 'Shirt',
+                'orden' => 2,
+            ]
+        );
 
-        $permPedidos = Permiso::create([
-            'nombre' => 'Pedidos',
-            'descripcion' => 'Visualización y gestión de pedidos',
-            'ruta' => 'pedidos',
-            'icono' => 'ShoppingBag',
-            'orden' => 3,
-        ]);
+        $permPedidos = Permiso::firstOrCreate(
+            ['ruta' => 'pedidos'],
+            [
+                'nombre' => 'Pedidos',
+                'descripcion' => 'Visualización y gestión de pedidos',
+                'icono' => 'ShoppingBag',
+                'orden' => 3,
+            ]
+        );
 
-        $permEnvios = Permiso::create([
-            'nombre' => 'Envíos',
-            'descripcion' => 'Seguimiento y asignación de despachos',
-            'ruta' => 'envios',
-            'icono' => 'Truck',
-            'orden' => 4,
-        ]);
+        $permEnvios = Permiso::firstOrCreate(
+            ['ruta' => 'envios'],
+            [
+                'nombre' => 'Envíos',
+                'descripcion' => 'Seguimiento y asignación de despachos',
+                'icono' => 'Truck',
+                'orden' => 4,
+            ]
+        );
 
-        $permPagos = Permiso::create([
-            'nombre' => 'Pagos',
-            'descripcion' => 'Registro de métodos de pago y cuotas',
-            'ruta' => 'pagos',
-            'icono' => 'CreditCard',
-            'orden' => 5,
-        ]);
+        $permPagos = Permiso::firstOrCreate(
+            ['ruta' => 'pagos'],
+            [
+                'nombre' => 'Pagos',
+                'descripcion' => 'Registro de métodos de pago y cuotas',
+                'icono' => 'CreditCard',
+                'orden' => 5,
+            ]
+        );
 
-        $permReclamos = Permiso::create([
-            'nombre' => 'Reclamos',
-            'descripcion' => 'Formulación y atención de quejas',
-            'ruta' => 'reclamos',
-            'icono' => 'AlertTriangle',
-            'orden' => 6,
-        ]);
+        $permReclamos = Permiso::firstOrCreate(
+            ['ruta' => 'reclamos'],
+            [
+                'nombre' => 'Reclamos',
+                'descripcion' => 'Formulación y atención de quejas',
+                'icono' => 'AlertTriangle',
+                'orden' => 6,
+            ]
+        );
 
-        $permEstadisticas = Permiso::create([
-            'nombre' => 'Estadísticas',
-            'descripcion' => 'Reportes y estadísticas del negocio',
-            'ruta' => 'estadisticas',
-            'icono' => 'BarChart3',
-            'orden' => 7,
-        ]);
+        $permEstadisticas = Permiso::firstOrCreate(
+            ['ruta' => 'estadisticas'],
+            [
+                'nombre' => 'Estadísticas',
+                'descripcion' => 'Reportes y estadísticas del negocio',
+                'icono' => 'BarChart3',
+                'orden' => 7,
+            ]
+        );
 
-        $permBitacoras = Permiso::create([
-            'nombre' => 'Bitácora',
-            'descripcion' => 'Registro de eventos y accesos del sistema',
-            'ruta' => 'bitacoras',
-            'icono' => 'History',
-            'orden' => 8,
-        ]);
+        $permBitacoras = Permiso::firstOrCreate(
+            ['ruta' => 'bitacoras'],
+            [
+                'nombre' => 'Bitácora',
+                'descripcion' => 'Registro de eventos y accesos del sistema',
+                'icono' => 'History',
+                'orden' => 8,
+            ]
+        );
 
-        $permRoles = Permiso::create([
-            'nombre' => 'Roles',
-            'descripcion' => 'Gestión de roles y permisos de acceso',
-            'ruta' => 'roles',
-            'icono' => 'Shield',
-            'orden' => 9,
-        ]);
+        $permRoles = Permiso::firstOrCreate(
+            ['ruta' => 'roles'],
+            [
+                'nombre' => 'Roles',
+                'descripcion' => 'Gestión de roles y permisos de acceso',
+                'icono' => 'Shield',
+                'orden' => 9,
+            ]
+        );
 
-        $permUsuarios = Permiso::create([
-            'nombre' => 'Usuarios',
-            'descripcion' => 'Gestión de usuarios y cuentas de acceso',
-            'ruta' => 'usuarios',
-            'icono' => 'Users',
-            'orden' => 10,
-        ]);
+        $permUsuarios = Permiso::firstOrCreate(
+            ['ruta' => 'usuarios'],
+            [
+                'nombre' => 'Usuarios',
+                'descripcion' => 'Gestión de usuarios y cuentas de acceso',
+                'icono' => 'Users',
+                'orden' => 10,
+            ]
+        );
 
-        $permOfertas = Permiso::create([
-            'nombre' => 'Ofertas',
-            'descripcion' => 'Registro y gestión de ofertas y promociones',
-            'ruta' => 'ofertas',
-            'icono' => 'Tag',
-            'orden' => 11,
-        ]);
+        $permOfertas = Permiso::firstOrCreate(
+            ['ruta' => 'ofertas'],
+            [
+                'nombre' => 'Ofertas',
+                'descripcion' => 'Registro y gestión de ofertas y promociones',
+                'icono' => 'Tag',
+                'orden' => 11,
+            ]
+        );
 
         // 3. Setup Access Matrix (roles_permissions)
-        // Admin gets all
-        $adminRole->permissions()->attach([
+        // Admin gets all parent permissions
+        $adminRole->permissions()->syncWithoutDetaching([
             $permDashboard->id, $permProductos->id, $permPedidos->id, $permEnvios->id,
             $permPagos->id, $permReclamos->id, $permEstadisticas->id, $permBitacoras->id,
             $permRoles->id, $permUsuarios->id, $permOfertas->id
         ]);
 
         // Cliente gets Dashboard, Catalog, Pedidos (own), Pagos (own), Reclamos (own)
-        $clienteRole->permissions()->attach([
+        $clienteRole->permissions()->syncWithoutDetaching([
             $permDashboard->id, $permProductos->id, $permPedidos->id, $permPagos->id, $permReclamos->id
         ]);
 
         // Distribuidor gets Dashboard, Envios
-        $distribuidorRole->permissions()->attach([
+        $distribuidorRole->permissions()->syncWithoutDetaching([
             $permDashboard->id, $permEnvios->id
         ]);
 
         // Vendedor gets Dashboard, Productos, Pedidos, Envios, Pagos, Reclamos, Estadisticas
-        $vendedorRole->permissions()->attach([
+        $vendedorRole->permissions()->syncWithoutDetaching([
             $permDashboard->id, $permProductos->id, $permPedidos->id, $permEnvios->id,
             $permPagos->id, $permReclamos->id, $permEstadisticas->id
         ]);
+
+        // 3b. Seed Child Permissions and sync to roles
+        $permissionsConfig = [
+            'dashboard' => ['ver' => 'Ver Dashboard'],
+            'productos' => [
+                'ver' => 'Ver Productos',
+                'crear' => 'Crear Productos',
+                'editar' => 'Editar Productos',
+                'eliminar' => 'Eliminar Productos'
+            ],
+            'pedidos' => [
+                'ver' => 'Ver Pedidos',
+                'crear' => 'Crear Pedidos',
+                'editar' => 'Editar/Cancelar Pedidos',
+                'eliminar' => 'Eliminar Pedidos'
+            ],
+            'envios' => [
+                'ver' => 'Ver Envíos',
+                'crear' => 'Crear Envíos',
+                'editar' => 'Editar Envíos',
+                'eliminar' => 'Eliminar Envíos'
+            ],
+            'pagos' => [
+                'ver' => 'Ver Pagos',
+                'crear' => 'Registrar Pagos',
+                'editar' => 'Confirmar/Editar Pagos',
+                'eliminar' => 'Eliminar Pagos'
+            ],
+            'reclamos' => [
+                'ver' => 'Ver Reclamos',
+                'crear' => 'Crear Reclamos',
+                'editar' => 'Responder/Editar Reclamos',
+                'eliminar' => 'Eliminar Reclamos'
+            ],
+            'estadisticas' => ['ver' => 'Ver Estadísticas'],
+            'bitacoras' => ['ver' => 'Ver Bitácora'],
+            'roles' => [
+                'ver' => 'Ver Roles',
+                'crear' => 'Crear Roles',
+                'editar' => 'Editar Roles',
+                'eliminar' => 'Eliminar Roles'
+            ],
+            'usuarios' => [
+                'ver' => 'Ver Usuarios',
+                'crear' => 'Crear Usuarios',
+                'editar' => 'Editar/Bloquear Usuarios',
+                'eliminar' => 'Eliminar Usuarios'
+            ],
+            'ofertas' => [
+                'ver' => 'Ver Ofertas',
+                'crear' => 'Crear Ofertas',
+                'editar' => 'Editar Ofertas',
+                'eliminar' => 'Eliminar Ofertas'
+            ],
+        ];
+
+        foreach ($permissionsConfig as $parentRuta => $actions) {
+            $parent = Permiso::where('ruta', $parentRuta)->first();
+            if (!$parent) {
+                continue;
+            }
+
+            $orderIndex = 1;
+            foreach ($actions as $actionKey => $actionName) {
+                $childRuta = "{$parentRuta}.{$actionKey}";
+                
+                $child = Permiso::firstOrCreate(
+                    ['ruta' => $childRuta],
+                    [
+                        'nombre' => $actionName,
+                        'descripcion' => "Permiso para {$actionName} en el sistema",
+                        'id_padre' => $parent->id,
+                        'orden' => $orderIndex++,
+                        'state' => 'activo',
+                    ]
+                );
+
+                // Attach to Admin
+                $adminRole->permissions()->syncWithoutDetaching([$child->id]);
+
+                // Cliente defaults
+                $allowedCli = true;
+                if ($parentRuta === 'productos' && $actionKey !== 'ver') {
+                    $allowedCli = false;
+                }
+                if ($parentRuta === 'envios') {
+                    $allowedCli = false;
+                }
+                if (in_array($parentRuta, ['roles', 'usuarios', 'ofertas', 'estadisticas', 'bitacoras'])) {
+                    $allowedCli = false;
+                }
+                if ($allowedCli) {
+                    $clienteRole->permissions()->syncWithoutDetaching([$child->id]);
+                }
+
+                // Distribuidor defaults
+                $allowedDist = true;
+                if ($parentRuta === 'envios' && !in_array($actionKey, ['ver', 'editar'])) {
+                    $allowedDist = false;
+                }
+                if ($parentRuta !== 'dashboard' && $parentRuta !== 'envios') {
+                    $allowedDist = false;
+                }
+                if ($allowedDist) {
+                    $distribuidorRole->permissions()->syncWithoutDetaching([$child->id]);
+                }
+
+                // Vendedor defaults
+                $allowedVend = true;
+                if (in_array($parentRuta, ['roles', 'usuarios', 'bitacoras'])) {
+                    $allowedVend = false;
+                }
+                if ($allowedVend) {
+                    $vendedorRole->permissions()->syncWithoutDetaching([$child->id]);
+                }
+            }
+        }
 
         // 4. Create Users for each Role
         User::create([

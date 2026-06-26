@@ -115,8 +115,7 @@ const getStatusBadge = (shipment: ShipmentType) => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Truck class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         {{ isDistributor ? 'Mis Despachos' : 'Gestión de Envíos' }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -125,7 +124,7 @@ const getStatusBadge = (shipment: ShipmentType) => {
                             : 'Asigna transportistas, define rutas de reparto y supervisa el estado de entrega de los pedidos.' }}
                     </p>
                 </div>
-                <div v-if="isStaff">
+                <div v-if="$page.props.auth.permissions.includes('envios.crear')">
                     <Link :href="route('envios.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
                             <Plus class="h-4 w-4" />
@@ -233,13 +232,13 @@ const getStatusBadge = (shipment: ShipmentType) => {
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <Link :href="route('envios.edit', shipment.id)">
+                                        <Link v-if="$page.props.auth.permissions.includes('envios.editar')" :href="route('envios.edit', shipment.id)">
                                             <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Editar detalles de entrega">
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
                                         <Button
-                                            v-if="isAdmin"
+                                            v-if="$page.props.auth.permissions.includes('envios.eliminar')"
                                             @click="confirmDelete(shipment)"
                                             variant="ghost"
                                             size="sm"

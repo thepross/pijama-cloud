@@ -95,7 +95,7 @@ const getOfferStatus = (offer: OfferType) => {
 
 const formatDiscount = (offer: OfferType) => {
     const val = Number(offer.valor_descuento);
-    return offer.tipo_descuento === 'porcentaje' ? `${val.toFixed(0)}%` : `$${val.toFixed(2)}`;
+    return offer.tipo_descuento === 'porcentaje' ? `${val.toFixed(0)}%` : `Bs. ${val.toFixed(2)}`;
 };
 
 const calculateFinalPrice = (offer: OfferType) => {
@@ -119,15 +119,14 @@ const calculateFinalPrice = (offer: OfferType) => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Tag class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Gestión de Ofertas
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
                         Crea, edita y administra ofertas de descuentos especiales asociadas a los productos de Pijamas Cloud.
                     </p>
                 </div>
-                <div>
+                <div v-if="$page.props.auth.permissions.includes('ofertas.crear')">
                     <Link :href="route('ofertas.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
                             <Plus class="h-4 w-4" />
@@ -219,9 +218,9 @@ const calculateFinalPrice = (offer: OfferType) => {
                                     {{ formatDiscount(offer) }}
                                 </td>
                                 <td class="p-4 font-mono font-bold text-foreground">
-                                    ${{ calculateFinalPrice(offer) }}
+                                    Bs. {{ calculateFinalPrice(offer) }}
                                     <span class="text-xs text-muted-foreground line-through font-normal block">
-                                        ${{ Number(offer.producto.precio_venta).toFixed(2) }}
+                                        Bs. {{ Number(offer.producto.precio_venta).toFixed(2) }}
                                     </span>
                                 </td>
                                 <td class="p-4 text-xs text-muted-foreground">
@@ -237,12 +236,13 @@ const calculateFinalPrice = (offer: OfferType) => {
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <Link :href="route('ofertas.edit', offer.id)">
+                                        <Link v-if="$page.props.auth.permissions.includes('ofertas.editar')" :href="route('ofertas.edit', offer.id)">
                                             <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Editar oferta">
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
                                         <Button
+                                            v-if="$page.props.auth.permissions.includes('ofertas.eliminar')"
                                             @click="confirmDelete(offer)"
                                             variant="ghost"
                                             size="sm"

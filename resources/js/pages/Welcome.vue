@@ -158,7 +158,7 @@ const submitContactForm = (e: Event) => {
                             <div class="flex items-center justify-between border-t border-border/80 pt-4">
                                 <div>
                                     <span class="text-xs text-muted-foreground block leading-none">Precio especial</span>
-                                    <span class="text-2xl font-black text-foreground">$39.99</span>
+                                    <span class="text-2xl font-black text-foreground">Bs. 39.99</span>
                                 </div>
                                 <span class="rounded bg-primary/10 text-primary text-xs font-bold px-2 py-1 uppercase">
                                     100% Algodón

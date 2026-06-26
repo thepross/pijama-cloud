@@ -112,8 +112,7 @@ const getStatusBadge = (claim: ClaimType) => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <AlertTriangle class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         {{ isClient ? 'Mis Reclamos y Comentarios' : 'Gestión de Reclamos y Comentarios' }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -122,7 +121,7 @@ const getStatusBadge = (claim: ClaimType) => {
                             : 'Administra y responde los reclamos y comentarios enviados por los clientes.' }}
                     </p>
                 </div>
-                <div v-if="isClient">
+                <div v-if="$page.props.auth.permissions.includes('reclamos.crear')">
                     <Link :href="route('reclamos.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
                             <Plus class="h-4 w-4" />
@@ -260,7 +259,7 @@ const getStatusBadge = (claim: ClaimType) => {
                                             </Button>
                                         </Link>
                                         <Button
-                                            v-if="isAdmin"
+                                            v-if="$page.props.auth.permissions.includes('reclamos.eliminar')"
                                             @click="confirmDelete(claim)"
                                             variant="ghost"
                                             size="sm"

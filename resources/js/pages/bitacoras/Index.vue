@@ -225,8 +225,7 @@ function formatDate(d: string): string {
             <!-- Header Section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <History class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Bitácora de Eventos
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">

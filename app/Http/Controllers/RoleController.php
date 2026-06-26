@@ -14,13 +14,27 @@ use Illuminate\Http\RedirectResponse;
 
 class RoleController extends Controller
 {
-    /**
-     * Authorize roles management routes.
-     */
-    private function authorizeRolesManagement(): void
+    private function authorizeRoleAction(string $action): void
     {
-        if (!Auth::check() || !Auth::user()->role->permissions()->where('ruta', 'roles')->exists()) {
-            abort(403, 'No tienes permiso para gestionar roles.');
+        if (!Auth::check()) {
+            abort(403, 'No autenticado.');
+        }
+
+        $user = Auth::user();
+        $mapping = [
+            'index'   => 'roles.ver',
+            'show'    => 'roles.ver',
+            'create'  => 'roles.crear',
+            'store'   => 'roles.crear',
+            'edit'    => 'roles.editar',
+            'update'  => 'roles.editar',
+            'destroy' => 'roles.eliminar',
+        ];
+
+        $perm = $mapping[$action] ?? 'roles.ver';
+
+        if (!$user->role->hasPermission($perm)) {
+            abort(403, 'No tienes permiso para realizar esta acción sobre roles.');
         }
     }
 
@@ -29,7 +43,7 @@ class RoleController extends Controller
      */
     public function index(Request $request): Response
     {
-        $this->authorizeRolesManagement();
+        $this->authorizeRoleAction('index');
 
         $search = $request->input('search');
 
@@ -60,11 +74,15 @@ class RoleController extends Controller
      */
     public function create(): Response
     {
-        $this->authorizeRolesManagement();
+        $this->authorizeRoleAction('create');
 
-        $permissions = Permiso::where('state', 'activo')
+        $permissions = Permiso::whereNull('id_padre')
+            ->where('state', 'activo')
+            ->with(['hijos' => function ($q) {
+                $q->where('state', 'activo')->orderBy('orden');
+            }])
             ->orderBy('orden')
-            ->get(['id', 'nombre', 'descripcion']);
+            ->get();
 
         return Inertia::render('roles/Create', [
             'permissions' => $permissions,
@@ -76,7 +94,7 @@ class RoleController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $this->authorizeRolesManagement();
+        $this->authorizeRoleAction('store');
 
         $request->validate([
             'nombre' => 'required|string|max:255|unique:roles,nombre',
@@ -120,15 +138,19 @@ class RoleController extends Controller
      */
     public function edit(Role $role): Response
     {
-        $this->authorizeRolesManagement();
+        $this->authorizeRoleAction('edit');
 
         if ($role->state === 'inactivo') {
             abort(404, 'El rol no se encuentra activo o disponible.');
         }
 
-        $permissions = Permiso::where('state', 'activo')
+        $permissions = Permiso::whereNull('id_padre')
+            ->where('state', 'activo')
+            ->with(['hijos' => function ($q) {
+                $q->where('state', 'activo')->orderBy('orden');
+            }])
             ->orderBy('orden')
-            ->get(['id', 'nombre', 'descripcion']);
+            ->get();
 
         $assignedPermissionIds = $role->permissions()->pluck('id')->toArray();
 
@@ -144,7 +166,7 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role): RedirectResponse
     {
-        $this->authorizeRolesManagement();
+        $this->authorizeRoleAction('update');
 
         if ($role->state === 'inactivo') {
             abort(404, 'El rol no se encuentra activo.');
@@ -196,7 +218,7 @@ class RoleController extends Controller
      */
     public function destroy(Request $request, Role $role): RedirectResponse
     {
-        $this->authorizeRolesManagement();
+        $this->authorizeRoleAction('destroy');
 
         if ($role->state === 'inactivo') {
             return to_route('roles.index')->with('error', 'El rol ya se encuentra inactivo.');

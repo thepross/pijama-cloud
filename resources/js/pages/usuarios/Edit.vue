@@ -58,8 +58,7 @@ const submit = () => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Users class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Editar Usuario: {{ props.usuario.nombre }} {{ props.usuario.apellido }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">

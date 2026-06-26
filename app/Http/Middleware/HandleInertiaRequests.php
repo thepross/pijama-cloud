@@ -45,13 +45,21 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? $request->user()->load('role') : null,
                 'menu' => $request->user()
                     ? $request->user()->role->permissions()
+                        ->whereNull('id_padre')
                         ->whereNotNull('ruta')
                         ->where('state', 'activo')
                         ->orderBy('orden')
                         ->get(['nombre', 'ruta', 'icono'])
+                    : [],
+                'permissions' => $request->user()
+                    ? $request->user()->role->permissions()
+                        ->whereNotNull('ruta')
+                        ->where('state', 'activo')
+                        ->pluck('ruta')
+                        ->toArray()
                     : [],
             ],
             'visits_count' => \App\Models\Visita::where('ruta', $path)->value('contador') ?? 0,

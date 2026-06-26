@@ -101,8 +101,7 @@ const getStatusBadge = (order: OrderType) => {
             <!-- Header section -->
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <ShoppingBag class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         {{ isClient ? 'Mis Pedidos' : 'Gestión de Pedidos' }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
@@ -111,7 +110,7 @@ const getStatusBadge = (order: OrderType) => {
                             : 'Realiza el seguimiento, confirmación y despacho de los pedidos textiles recibidos.' }}
                     </p>
                 </div>
-                <div v-if="isClient">
+                <div v-if="$page.props.auth.permissions.includes('pedidos.crear')">
                     <Link :href="route('pedidos.create')">
                         <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
                             <Plus class="h-4 w-4" />
@@ -183,7 +182,7 @@ const getStatusBadge = (order: OrderType) => {
                     <div class="pt-4 border-t border-border flex items-center justify-between">
                         <div class="flex flex-col">
                             <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Total a Pagar</span>
-                            <span class="font-mono text-lg font-black text-foreground">${{ Number(order.total).toFixed(2) }}</span>
+                            <span class="font-mono text-lg font-black text-foreground">Bs. {{ Number(order.total).toFixed(2) }}</span>
                         </div>
                         <Link :href="route('pedidos.show', order.id)">
                             <Button variant="outline" size="sm" class="flex items-center gap-1 rounded-lg">
@@ -226,7 +225,7 @@ const getStatusBadge = (order: OrderType) => {
                                 </td>
                                 <td class="p-4 font-mono text-muted-foreground">{{ order.cliente.ci }}</td>
                                 <td class="p-4 text-muted-foreground">{{ order.fecha_pedido }}</td>
-                                <td class="p-4 font-mono font-bold text-foreground">${{ Number(order.total).toFixed(2) }}</td>
+                                <td class="p-4 font-mono font-bold text-foreground">Bs. {{ Number(order.total).toFixed(2) }}</td>
                                 <td class="p-4">
                                     <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold', getStatusBadge(order).class]">
                                         {{ getStatusBadge(order).label }}
@@ -240,7 +239,7 @@ const getStatusBadge = (order: OrderType) => {
                                             </Button>
                                         </Link>
                                         <Button
-                                            v-if="isAdmin"
+                                            v-if="$page.props.auth.permissions.includes('pedidos.eliminar')"
                                             @click="confirmDelete(order)"
                                             variant="ghost"
                                             size="sm"

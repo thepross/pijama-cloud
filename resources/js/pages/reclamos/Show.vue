@@ -112,9 +112,8 @@ const getStatusBadge = (status: string) => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <AlertTriangle class="h-8 w-8 text-primary" />
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <h1 class="text-3xl font-bold tracking-tight text-foreground">
                             Reclamo #{{ props.reclamo.id }}
                         </h1>
                         <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
@@ -207,7 +206,7 @@ const getStatusBadge = (status: string) => {
                             </div>
                             <div>
                                 <span class="text-muted-foreground uppercase font-bold tracking-wide">Monto</span>
-                                <p class="font-mono text-sm font-bold text-foreground mt-0.5">${{ Number(props.reclamo.pedido.total).toFixed(2) }}</p>
+                                <p class="font-mono text-sm font-bold text-foreground mt-0.5">Bs. {{ Number(props.reclamo.pedido.total).toFixed(2) }}</p>
                             </div>
                         </div>
 
@@ -232,7 +231,7 @@ const getStatusBadge = (status: string) => {
                                     </div>
                                     <div class="text-right">
                                         <p class="font-semibold text-foreground">{{ item.cantidad }}x</p>
-                                        <p class="text-xs font-mono text-muted-foreground">${{ Number(item.precio_venta).toFixed(2) }} c/u</p>
+                                        <p class="text-xs font-mono text-muted-foreground">Bs. {{ Number(item.precio_venta).toFixed(2) }} c/u</p>
                                     </div>
                                 </div>
                             </div>

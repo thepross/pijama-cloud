@@ -62,8 +62,7 @@ const submit = () => {
             <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <Shirt class="h-8 w-8 text-primary" />
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Editar Prenda: {{ props.producto.nombre }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
