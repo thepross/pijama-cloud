@@ -22,6 +22,8 @@ class Pago extends Model
         'numero_cuota',
         'saldo_pendiente',
         'observacion',
+        'transaction_id',
+        'qr_base64',
     ];
 
     /**

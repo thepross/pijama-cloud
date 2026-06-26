@@ -263,14 +263,17 @@ html {
 }
 
 /* Font sizes */
-html.font-normal, html.font-normal body {
+html.font-normal,
+html.font-normal body {
     font-size: 16px !important;
 }
 
-html.font-large, html.font-large body {
+html.font-large,
+html.font-large body {
     font-size: 19px !important;
 }
 
-html.font-xlarge, html.font-xlarge body {
+html.font-xlarge,
+html.font-xlarge body {
     font-size: 22px !important;
 }

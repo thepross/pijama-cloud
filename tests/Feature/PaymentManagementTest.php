@@ -8,6 +8,7 @@ use App\Models\Permiso;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class PaymentManagementTest extends TestCase
@@ -127,6 +128,25 @@ class PaymentManagementTest extends TestCase
             'total' => 150.00,
             'estado_pedido' => 'confirmado',
             'state' => 'activo',
+        ]);
+
+        // Mock PagoFacil API endpoints
+        config([
+            'services.pagofacil.service_token' => 'test-service-token',
+            'services.pagofacil.secret_token' => 'test-secret-token',
+            'services.pagofacil.base_url' => 'https://masterqr.pagofacil.com.bo/api/services/v2',
+        ]);
+
+        Http::fake([
+            'https://masterqr.pagofacil.com.bo/*' => Http::response([
+                'error' => 0,
+                'status' => 1,
+                'values' => [
+                    'accessToken' => 'fake-jwt-token-12345',
+                    'transactionId' => 99998888,
+                    'qrBase64' => 'fake-qr-base64-data',
+                ],
+            ], 200),
         ]);
     }
 

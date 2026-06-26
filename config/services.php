@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'pagofacil' => [
+        'service_token' => env('PAGOFACIL_SERVICE_TOKEN'),
+        'secret_token' => env('PAGOFACIL_SECRET_TOKEN'),
+        'base_url' => env('PAGOFACIL_BASE_URL', 'https://masterqr.pagofacil.com.bo/api/services/v2'),
+        'callback_url' => env('CALLBACK_URL', 'https://pijamas.thepross.site/api/callback'),
+    ],
+
 ];
