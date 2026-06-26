@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,13 @@ interface OrderOption {
     estado_pedido: string;
     total_pagado: number;
     saldo_pendiente: number;
+    total_cuotas_existente?: number | null;
+    cuotas_registradas?: number[];
 }
 
 const props = defineProps<{
     pedidos: OrderOption[];
+    selected_id_pedido?: string | number | null;
 }>();
 
 const form = useForm({
@@ -44,19 +47,72 @@ const selectedOrder = computed(() => {
     return props.pedidos.find(p => p.id === Number(form.id_pedido)) || null;
 });
 
-// Auto-fill amount with pending balance when order changes
+// Compute if it's the first payment for the selected order
+const isFirstPayment = computed(() => {
+    if (!selectedOrder.value) return true;
+    return selectedOrder.value.total_cuotas_existente === null || selectedOrder.value.total_cuotas_existente === undefined;
+});
+
+// Compute selectable cuota numbers based on total_cuotas and registered ones
+const selectableCuotas = computed(() => {
+    if (!selectedOrder.value) return [1];
+    
+    const total = selectedOrder.value.total_cuotas_existente || form.total_cuotas || 1;
+    const registradas = selectedOrder.value.cuotas_registradas || [];
+    
+    const options = [];
+    for (let i = 1; i <= total; i++) {
+        if (!registradas.includes(i)) {
+            options.push(i);
+        }
+    }
+    return options.length > 0 ? options : [1];
+});
+
+// Auto-fill form fields when order changes
 watch(selectedOrder, (newOrder) => {
     if (newOrder) {
         form.monto = Number(newOrder.saldo_pendiente).toFixed(2);
+        
+        if (newOrder.total_cuotas_existente) {
+            form.total_cuotas = newOrder.total_cuotas_existente;
+            
+            // Auto-select first available installment
+            const available = selectableCuotas.value;
+            if (available.length > 0) {
+                form.numero_cuota = available[0];
+            } else {
+                form.numero_cuota = 1;
+            }
+        } else {
+            form.total_cuotas = 1;
+            form.numero_cuota = 1;
+        }
     } else {
         form.monto = '';
+        form.total_cuotas = 1;
+        form.numero_cuota = 1;
     }
 });
 
-// Watch total_cuotas to reset current cuota to 1 if total is 1
+// Watch total_cuotas (for first payment) to ensure numero_cuota resets if invalid
 watch(() => form.total_cuotas, (newTotal) => {
-    if (Number(newTotal) === 1) {
-        form.numero_cuota = 1;
+    if (isFirstPayment.value) {
+        const val = Number(newTotal);
+        if (form.numero_cuota > val) {
+            form.numero_cuota = 1;
+        }
+    }
+});
+
+// Pre-fill order if passed as a query param
+onMounted(() => {
+    if (props.selected_id_pedido) {
+        const orderId = Number(props.selected_id_pedido);
+        const exists = props.pedidos.some(p => p.id === orderId);
+        if (exists) {
+            form.id_pedido = orderId;
+        }
     }
 });
 
@@ -184,29 +240,31 @@ const submit = () => {
 
                                 <div class="space-y-2">
                                     <Label for="numero_cuota" class="text-sm font-semibold text-foreground">
-                                        Número de Cuota
+                                        Número de Cuota <span class="text-destructive">*</span>
                                     </Label>
-                                    <Input
+                                    <select
                                         id="numero_cuota"
                                         v-model="form.numero_cuota"
-                                        type="number"
-                                        min="1"
-                                        :disabled="form.total_cuotas === 1"
-                                        class="rounded-xl"
-                                    />
+                                        class="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    >
+                                        <option v-for="cuota in selectableCuotas" :key="cuota" :value="cuota">
+                                            Cuota {{ cuota }}
+                                        </option>
+                                    </select>
                                     <InputError :message="form.errors.numero_cuota" />
                                 </div>
 
                                 <div class="space-y-2">
                                     <Label for="total_cuotas" class="text-sm font-semibold text-foreground">
-                                        Total Cuotas
+                                        Total Cuotas <span class="text-destructive">*</span>
                                     </Label>
                                     <Input
                                         id="total_cuotas"
                                         v-model="form.total_cuotas"
                                         type="number"
                                         min="1"
-                                        class="rounded-xl"
+                                        :disabled="!isFirstPayment"
+                                        class="rounded-xl disabled:opacity-80 disabled:bg-muted"
                                     />
                                     <InputError :message="form.errors.total_cuotas" />
                                 </div>

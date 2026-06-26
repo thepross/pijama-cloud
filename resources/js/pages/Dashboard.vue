@@ -2,13 +2,16 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import {
     TrendingUp, Users, Package, AlertCircle, ShoppingCart,
     Star, MessageSquare, Truck, CheckCircle, Clock, Banknote,
     BarChart2, Activity, ArrowUpRight
 } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -91,81 +94,273 @@ const distribuidorKpis = computed(() => props.kpis as DistribuidorKpis | undefin
 const pedidosRecientes = computed(() => (props.recientes as PedidoReciente[] | undefined) ?? []);
 const enviosRecientes = computed(() => (props.recientes as EnvioReciente[] | undefined) ?? []);
 
-// ─── SVG Line Chart helpers ───────────────────────────────────────────────────
-function buildLinePath(
-    data: { value: number }[],
-    width: number,
-    height: number,
-    padding = 20,
-): string {
-    if (!data.length) return '';
-    const values = data.map((d) => d.value);
-    const minV = Math.min(...values);
-    const maxV = Math.max(...values);
-    const range = maxV - minV || 1;
-    const w = width - padding * 2;
-    const h = height - padding * 2;
-    const pts = data.map((d, i) => {
-        const x = padding + (i / (data.length - 1 || 1)) * w;
-        const y = padding + h - ((d.value - minV) / range) * h;
-        return `${x},${y}`;
+// ─── Chart.js Setup ──────────────────────────────────────────────────────────
+const salesChartCanvas = ref<HTMLCanvasElement | null>(null);
+const categoriesChartCanvas = ref<HTMLCanvasElement | null>(null);
+const deliveriesChartCanvas = ref<HTMLCanvasElement | null>(null);
+
+let salesChart: Chart | null = null;
+let categoriesChart: Chart | null = null;
+let deliveriesChart: Chart | null = null;
+
+const initSalesChart = () => {
+    if (!salesChartCanvas.value) return;
+    if (salesChart) {
+        salesChart.destroy();
+    }
+    const ctx = salesChartCanvas.value.getContext('2d');
+    if (!ctx) return;
+
+    const dataPoints = props.ventas_diarias ?? [];
+    const labels = dataPoints.map(point => fmtDate(point.date));
+    const data = dataPoints.map(point => point.revenue);
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Ventas',
+                data,
+                fill: true,
+                backgroundColor: gradient,
+                borderColor: '#6366f1',
+                borderWidth: 2.5,
+                tension: 0.4,
+                pointBackgroundColor: '#6366f1',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ' + fmt(Number(context.raw));
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                y: {
+                    border: {
+                        dash: [5, 5]
+                    },
+                    grid: {
+                        color: 'rgba(156, 163, 175, 0.15)'
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        },
+                        callback: function(value) {
+                            return 'Bs. ' + value;
+                        }
+                    }
+                }
+            }
+        }
     });
-    return `M ${pts.join(' L ')}`;
-}
+};
 
-function buildAreaPath(
-    data: { value: number }[],
-    width: number,
-    height: number,
-    padding = 20,
-): string {
-    if (!data.length) return '';
-    const line = buildLinePath(data, width, height, padding);
-    const w = width - padding * 2;
-    const lastX = padding + w;
-    return `${line} L ${lastX},${height - padding} L ${padding},${height - padding} Z`;
-}
+const initCategoriesChart = () => {
+    if (!categoriesChartCanvas.value) return;
+    if (categoriesChart) {
+        categoriesChart.destroy();
+    }
+    const ctx = categoriesChartCanvas.value.getContext('2d');
+    if (!ctx) return;
 
-const ventasPoints = computed(() =>
-    (props.ventas_diarias ?? []).map((d) => ({ label: d.date, value: d.revenue })),
-);
-const enviosPoints = computed(() =>
-    (props.envios_diarios ?? []).map((d) => ({ label: d.date, value: d.count })),
-);
+    const dataPoints = props.categorias ?? [];
+    const labels = dataPoints.map(item => item.categoria);
+    const data = dataPoints.map(item => item.cantidad);
 
-const ventasLinePath = computed(() => buildLinePath(ventasPoints.value, 400, 120));
-const ventasAreaPath = computed(() => buildAreaPath(ventasPoints.value, 400, 120));
-const enviosLinePath = computed(() => buildLinePath(enviosPoints.value, 400, 120));
-const enviosAreaPath = computed(() => buildAreaPath(enviosPoints.value, 400, 120));
+    categoriesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: [
+                    '#6366f1',
+                    '#3b82f6',
+                    '#ec4899',
+                    '#f59e0b',
+                    '#10b981',
+                ],
+                borderWidth: 1,
+                borderColor: 'transparent'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 11
+                        },
+                        color: 'currentColor'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = Number(context.raw);
+                            return ` ${value} prendas`;
+                        }
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+};
+
+const initDeliveriesChart = () => {
+    if (!deliveriesChartCanvas.value) return;
+    if (deliveriesChart) {
+        deliveriesChart.destroy();
+    }
+    const ctx = deliveriesChartCanvas.value.getContext('2d');
+    if (!ctx) return;
+
+    const dataPoints = props.envios_diarios ?? [];
+    const labels = dataPoints.map(point => fmtDate(point.date));
+    const data = dataPoints.map(point => point.count);
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+    gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+    deliveriesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Entregas',
+                data,
+                fill: true,
+                backgroundColor: gradient,
+                borderColor: '#10b981',
+                borderWidth: 2.5,
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.raw} entregas`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    border: {
+                        dash: [5, 5]
+                    },
+                    grid: {
+                        color: 'rgba(156, 163, 175, 0.15)'
+                    },
+                    ticks: {
+                        precision: 0,
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+
+onMounted(() => {
+    if (props.role_type === 'staff') {
+        initSalesChart();
+    } else if (props.role_type === 'cliente') {
+        initCategoriesChart();
+    } else if (props.role_type === 'distribuidor') {
+        initDeliveriesChart();
+    }
+});
+
+onUnmounted(() => {
+    if (salesChart) salesChart.destroy();
+    if (categoriesChart) categoriesChart.destroy();
+    if (deliveriesChart) deliveriesChart.destroy();
+});
+
+watch(() => props.ventas_diarias, () => {
+    if (props.role_type === 'staff') {
+        initSalesChart();
+    }
+}, { deep: true });
+
+watch(() => props.categorias, () => {
+    if (props.role_type === 'cliente') {
+        initCategoriesChart();
+    }
+}, { deep: true });
+
+watch(() => props.envios_diarios, () => {
+    if (props.role_type === 'distribuidor') {
+        initDeliveriesChart();
+    }
+}, { deep: true });
 
 // ─── Bar chart for visits ─────────────────────────────────────────────────────
 const visitaBarMax = computed(() =>
     Math.max(...(props.visitas ?? []).map((v) => v.contador), 1),
 );
-
-// ─── Donut chart for categories ───────────────────────────────────────────────
-const DONUT_COLORS = ['var(--primary)', '#3b82f6', '#ec4899', '#f59e0b', '#10b981'];
-const donutPaths = computed(() => {
-    const cats = props.categorias ?? [];
-    const total = cats.reduce((s, c) => s + c.cantidad, 0) || 1;
-    let startAngle = -Math.PI / 2;
-    return cats.map((cat, i) => {
-        const slice = (cat.cantidad / total) * 2 * Math.PI;
-        const endAngle = startAngle + slice;
-        const R = 60;
-        const cx = 80;
-        const cy = 80;
-        const x1 = cx + R * Math.cos(startAngle);
-        const y1 = cy + R * Math.sin(startAngle);
-        const x2 = cx + R * Math.cos(endAngle);
-        const y2 = cy + R * Math.sin(endAngle);
-        const large = slice > Math.PI ? 1 : 0;
-        const d = `M ${cx},${cy} L ${x1},${y1} A ${R},${R} 0 ${large},1 ${x2},${y2} Z`;
-        const result = { d, color: DONUT_COLORS[i % DONUT_COLORS.length], label: cat.categoria };
-        startAngle = endAngle;
-        return result;
-    });
-});
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(n: number): string {
@@ -280,32 +475,9 @@ const statusColor: Record<string, string> = {
                             <CardDescription>Ingresos económicos por día de la última semana.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="ventasPoints.length > 1" class="space-y-4">
-                                <div class="relative w-full h-[180px] bg-muted/20 border border-border/50 rounded-xl overflow-hidden p-2">
-                                    <svg viewBox="0 0 400 120" class="w-full h-full" preserveAspectRatio="none">
-                                        <defs>
-                                            <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/>
-                                                <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
-                                            </linearGradient>
-                                        </defs>
-                                        <path :d="ventasAreaPath" fill="url(#salesGrad)" />
-                                        <path :d="ventasLinePath" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                                        <circle
-                                            v-for="(pt, i) in ventasPoints"
-                                            :key="i"
-                                            :cx="20 + (i / (ventasPoints.length - 1)) * 360"
-                                            :cy="20 + 80 - ((pt.value - Math.min(...ventasPoints.map(p => p.value))) / (Math.max(...ventasPoints.map(p => p.value)) - Math.min(...ventasPoints.map(p => p.value)) || 1)) * 80"
-                                            r="4"
-                                            fill="var(--primary)"
-                                            stroke="currentColor"
-                                            stroke-width="1.5"
-                                            class="text-card"
-                                        />
-                                    </svg>
-                                </div>
-                                <div class="flex justify-between px-1">
-                                    <span v-for="(pt, i) in ventasPoints" :key="i" class="text-[10px] text-muted-foreground font-semibold font-mono">{{ fmtDate(pt.label) }}</span>
+                            <div v-if="props.ventas_diarias && props.ventas_diarias.length > 0" class="space-y-4">
+                                <div class="relative w-full h-[180px] bg-muted/20 border border-border/50 rounded-xl p-2">
+                                    <canvas ref="salesChartCanvas"></canvas>
                                 </div>
                             </div>
                             <div v-else class="flex h-[180px] items-center justify-center text-sm text-muted-foreground">
@@ -491,17 +663,8 @@ const statusColor: Record<string, string> = {
                             <CardDescription>Distribución de tus pijamas comprados.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="categorias && categorias.length" class="flex flex-col items-center justify-center gap-6 py-1">
-                                <svg viewBox="0 0 160 160" class="h-28 w-28 shrink-0">
-                                    <path v-for="(seg, i) in donutPaths" :key="i" :d="seg.d" :fill="seg.color" />
-                                    <circle cx="80" cy="80" r="38" fill="white" class="dark:fill-zinc-950" />
-                                </svg>
-                                <ul class="w-full grid grid-cols-2 gap-2 text-[11px] text-muted-foreground border-t border-border/40 pt-3">
-                                    <li v-for="(seg, i) in donutPaths" :key="i" class="flex items-center gap-1.5 truncate">
-                                        <span class="h-2 w-2 rounded-full shrink-0" :style="{ background: seg.color }"></span>
-                                        <span class="capitalize truncate font-medium">{{ seg.label ?? 'General' }}</span>
-                                    </li>
-                                </ul>
+                            <div v-if="props.categorias && props.categorias.length" class="relative w-full h-[180px] p-2">
+                                <canvas ref="categoriesChartCanvas"></canvas>
                             </div>
                             <p v-else class="py-12 text-center text-sm text-muted-foreground">No hay estadísticas de categorías.</p>
                         </CardContent>
@@ -586,32 +749,9 @@ const statusColor: Record<string, string> = {
                             <p class="text-xs text-muted-foreground">Envíos concretados por día en la última semana.</p>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="enviosPoints.length > 1">
-                                <div class="relative w-full h-[140px] bg-muted/20 border border-border/50 rounded-xl overflow-hidden p-2">
-                                    <svg viewBox="0 0 400 120" class="w-full h-full" preserveAspectRatio="none">
-                                        <defs>
-                                            <linearGradient id="envioGrad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/>
-                                                <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
-                                            </linearGradient>
-                                        </defs>
-                                        <path :d="enviosAreaPath" fill="url(#envioGrad)" />
-                                        <path :d="enviosLinePath" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                                        <circle
-                                            v-for="(pt, i) in enviosPoints"
-                                            :key="i"
-                                            :cx="20 + (i / (enviosPoints.length - 1)) * 360"
-                                            :cy="20 + 80 - ((pt.value - Math.min(...enviosPoints.map(p => p.value))) / (Math.max(...enviosPoints.map(p => p.value)) - Math.min(...enviosPoints.map(p => p.value)) || 1)) * 80"
-                                            r="4"
-                                            fill="var(--primary)"
-                                            stroke="currentColor"
-                                            stroke-width="1.5"
-                                            class="text-card"
-                                        />
-                                    </svg>
-                                </div>
-                                <div class="mt-2 flex justify-between px-1">
-                                    <span v-for="(pt, i) in enviosPoints" :key="i" class="text-[10px] text-muted-foreground font-semibold font-mono">{{ fmtDate(pt.label) }}</span>
+                            <div v-if="props.envios_diarios && props.envios_diarios.length > 0">
+                                <div class="relative w-full h-[140px] bg-muted/20 border border-border/50 rounded-xl p-2">
+                                    <canvas ref="deliveriesChartCanvas"></canvas>
                                 </div>
                             </div>
                             <div v-else class="flex h-[140px] items-center justify-center text-sm text-muted-foreground">

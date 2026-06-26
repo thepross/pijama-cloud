@@ -1,21 +1,20 @@
 <?php
 
+use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EnvioController;
+use App\Http\Controllers\EstadisticaController;
+use App\Http\Controllers\OfertaController;
+use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\PuntuacionController;
+use App\Http\Controllers\ReclamoController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\SearchController;
-use App\Http\Controllers\PuntuacionController;
-use App\Http\Controllers\OfertaController;
-use App\Http\Controllers\PedidoController;
-use App\Http\Controllers\EnvioController;
-use App\Http\Controllers\ReclamoController;
-use App\Http\Controllers\PagoController;
-use App\Http\Controllers\EstadisticaController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\BitacoraController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -25,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('global-search', [SearchController::class, 'search'])->name('global-search');
+    Route::get('buscar', [SearchController::class, 'showResults'])->name('buscar');
     Route::post('puntuaciones', [PuntuacionController::class, 'store'])->name('puntuaciones.store');
     Route::delete('puntuaciones/{puntuacion}', [PuntuacionController::class, 'destroy'])->name('puntuaciones.destroy');
     Route::resource('roles', RoleController::class);

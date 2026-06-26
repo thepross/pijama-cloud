@@ -4,7 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Eye, Trash2, ShoppingBag, ShieldAlert, Check, AlertCircle } from 'lucide-vue-next';
+import { Search, Plus, Eye, Trash2, ShoppingBag, ShieldAlert, Check, AlertCircle, CreditCard } from 'lucide-vue-next';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface UserType {
@@ -25,6 +25,7 @@ interface OrderType {
     observacion: string | null;
     state: string;
     cliente: UserType;
+    pagos?: any[];
 }
 
 interface PaginatedOrders {
@@ -90,6 +91,14 @@ const getStatusBadge = (order: OrderType) => {
         cancelado: { label: 'Cancelado', class: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400 border border-red-200 dark:border-red-900/50' },
     };
     return map[order.estado_pedido] || { label: order.estado_pedido, class: 'bg-neutral-100 text-neutral-800' };
+};
+
+const getSaldoPendiente = (order: OrderType) => {
+    if (!order.pagos) return parseFloat(order.total as string);
+    const totalPagado = order.pagos
+        .filter((p: any) => p.estado_pago === 'completado')
+        .reduce((sum: number, p: any) => sum + parseFloat(p.monto), 0);
+    return Math.max(0, parseFloat(order.total as string) - totalPagado);
 };
 </script>
 
@@ -180,16 +189,37 @@ const getStatusBadge = (order: OrderType) => {
                         </p>
                     </div>
                     <div class="pt-4 border-t border-border flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Total a Pagar</span>
-                            <span class="font-mono text-lg font-black text-foreground">Bs. {{ Number(order.total).toFixed(2) }}</span>
+                        <div class="flex flex-col gap-0.5">
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Total:</span>
+                                <span class="font-mono font-bold text-foreground">Bs. {{ Number(order.total).toFixed(2) }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">
+                                    {{ getSaldoPendiente(order) > 0 ? 'Pendiente:' : 'Pagado:' }}
+                                </span>
+                                <span :class="['font-mono font-black', getSaldoPendiente(order) > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400']">
+                                    Bs. {{ Number(getSaldoPendiente(order) > 0 ? getSaldoPendiente(order) : order.total).toFixed(2) }}
+                                </span>
+                            </div>
                         </div>
-                        <Link :href="route('pedidos.show', order.id)">
-                            <Button variant="outline" size="sm" class="flex items-center gap-1 rounded-lg">
-                                <Eye class="h-4 w-4" />
-                                Detalles
-                            </Button>
-                        </Link>
+                        <div class="flex items-center gap-2">
+                            <Link :href="route('pedidos.show', order.id)">
+                                <Button variant="outline" size="sm" class="flex items-center gap-1 rounded-lg">
+                                    <Eye class="h-4 w-4" />
+                                    Detalles
+                                </Button>
+                            </Link>
+                            <Link 
+                                v-if="getSaldoPendiente(order) > 0 && order.estado_pedido !== 'cancelado' && $page.props.auth.permissions.includes('pagos.crear')"
+                                :href="route('pagos.create', { id_pedido: order.id })"
+                            >
+                                <Button size="sm" class="flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-sm">
+                                    <CreditCard class="h-4 w-4" />
+                                    Pagar
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -233,6 +263,15 @@ const getStatusBadge = (order: OrderType) => {
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        <Link 
+                                            v-if="getSaldoPendiente(order) > 0 && order.estado_pedido !== 'cancelado' && $page.props.auth.permissions.includes('pagos.crear')"
+                                            :href="route('pagos.create', { id_pedido: order.id })"
+                                        >
+                                            <Button size="sm" class="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-sm flex items-center gap-1" title="Registrar Pago">
+                                                <CreditCard class="h-4 w-4" />
+                                                <span class="sr-only sm:not-sr-only text-xs">Pagar</span>
+                                            </Button>
+                                        </Link>
                                         <Link :href="route('pedidos.show', order.id)">
                                             <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Ver detalles y gestionar">
                                                 <Eye class="h-4 w-4" />

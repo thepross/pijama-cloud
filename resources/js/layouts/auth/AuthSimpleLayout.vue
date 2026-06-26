@@ -14,8 +14,8 @@ defineProps<{
             <div class="flex flex-col gap-8">
                 <div class="flex flex-col items-center gap-4">
                     <Link :href="route('home')" class="flex flex-col items-center gap-2 font-medium">
-                        <div class="mb-1 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground text-2xl shadow-sm">
-                            ☁️
+                        <div class="mb-1 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                            <AppLogoIcon class="size-6 text-primary-foreground" />
                         </div>
                         <span class="text-lg font-bold tracking-tight text-foreground">Pijamas Cloud</span>
                     </Link>

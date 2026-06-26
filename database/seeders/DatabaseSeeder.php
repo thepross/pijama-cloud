@@ -431,5 +431,7 @@ class DatabaseSeeder extends Seeder
             'estado_oferta' => 'activa',
             'state' => 'activo',
         ]);
+
+        $this->call(DatosEstadisticosSeeder::class);
     }
 }

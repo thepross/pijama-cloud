@@ -3,11 +3,11 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Paintbrush, Search, Loader2, Users, Shield, Archive, HelpCircle } from 'lucide-vue-next';
+import { Paintbrush, Search, Loader2, Users, Shield, Archive, HelpCircle, ShoppingBag, Truck, CreditCard, AlertTriangle, Tag } from 'lucide-vue-next';
 import ThemeController from '@/components/ThemeController.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { ref, watch } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { Input } from '@/components/ui/input';
 
 defineProps<{
@@ -50,6 +50,13 @@ watch(searchQuery, (newVal) => {
     }, 300);
 });
 
+const triggerFullSearch = () => {
+    if (searchQuery.value.trim().length >= 2) {
+        showResults.value = false;
+        router.visit(`/buscar?query=${encodeURIComponent(searchQuery.value.trim())}`);
+    }
+};
+
 const handleBlur = () => {
     setTimeout(() => {
         showResults.value = false;
@@ -61,6 +68,11 @@ const getIcon = (iconName: string) => {
         case 'Users': return Users;
         case 'Shield': return Shield;
         case 'Archive': return Archive;
+        case 'ShoppingBag': return ShoppingBag;
+        case 'Truck': return Truck;
+        case 'CreditCard': return CreditCard;
+        case 'AlertTriangle': return AlertTriangle;
+        case 'Tag': return Tag;
         default: return HelpCircle;
     }
 };
@@ -95,8 +107,10 @@ const getIcon = (iconName: string) => {
 
         <div class="flex items-center gap-3">
             <!-- Search bar -->
-            <div class="relative w-48 sm:w-64">
-                <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <form @submit.prevent="triggerFullSearch" class="relative w-48 sm:w-64">
+                <button type="submit" class="absolute left-2.5 top-2.5 text-muted-foreground hover:text-foreground">
+                    <Search class="h-4 w-4" />
+                </button>
                 <Input
                     type="search"
                     placeholder="Buscar en todo el sitio..."
@@ -142,7 +156,7 @@ const getIcon = (iconName: string) => {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </form>
 
             <!-- Theme Customization Dialog -->
             <Dialog>

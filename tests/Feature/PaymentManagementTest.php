@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Permiso;
-use App\Models\Pedido;
 use App\Models\Pago;
-use App\Models\Bitacora;
+use App\Models\Pedido;
+use App\Models\Permiso;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,20 +15,27 @@ class PaymentManagementTest extends TestCase
     use RefreshDatabase;
 
     private Role $adminRole;
+
     private User $adminUser;
 
     private Role $vendorRole;
+
     private User $vendorUser;
 
     private Role $customerRole;
+
     private User $customerUser;
+
     private User $otherCustomerUser;
 
     private Role $distributorRole;
+
     private User $distributorUser;
 
     private Permiso $paymentsPermission;
+
     private Pedido $customerOrder;
+
     private Pedido $otherCustomerOrder;
 
     protected function setUp(): void
@@ -309,7 +315,7 @@ class PaymentManagementTest extends TestCase
         $this->assertDatabaseHas('bitacoras', [
             'id_usuario' => $this->customerUser->id,
             'evento' => 'callback_pagofacil',
-            'recurso' => 'pagos/' . $pago->id,
+            'recurso' => 'pagos/'.$pago->id,
         ]);
     }
 
@@ -342,7 +348,7 @@ class PaymentManagementTest extends TestCase
         $this->assertDatabaseHas('bitacoras', [
             'id_usuario' => $this->vendorUser->id,
             'evento' => 'confirmar_pago',
-            'recurso' => 'pagos/' . $pago->id,
+            'recurso' => 'pagos/'.$pago->id,
         ]);
     }
 
@@ -388,5 +394,100 @@ class PaymentManagementTest extends TestCase
 
         $response = $this->actingAs($this->vendorUser)->delete(route('pagos.destroy', $pago->id));
         $response->assertStatus(403);
+    }
+
+    public function test_subsequent_payment_validation_fails_on_different_total_cuotas(): void
+    {
+        // First payment establishes 3 total cuotas
+        Pago::create([
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'fecha_pago' => now()->toDateString(),
+            'tipo_pago' => 'efectivo',
+            'estado_pago' => 'completado',
+            'total_cuotas' => 3,
+            'numero_cuota' => 1,
+            'saldo_pendiente' => 70.00,
+        ]);
+
+        // Attempt second payment with different total cuotas (4)
+        $response = $this->actingAs($this->customerUser)->post(route('pagos.store'), [
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'tipo_pago' => 'qr',
+            'total_cuotas' => 4,
+            'numero_cuota' => 2,
+        ]);
+
+        $response->assertSessionHasErrors(['total_cuotas']);
+        $this->assertEquals(
+            'El total de cuotas para este pedido ya fue establecido en 3',
+            session('errors')->first('total_cuotas')
+        );
+    }
+
+    public function test_subsequent_payment_validation_fails_on_already_registered_numero_cuota(): void
+    {
+        // First payment
+        Pago::create([
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'fecha_pago' => now()->toDateString(),
+            'tipo_pago' => 'efectivo',
+            'estado_pago' => 'completado',
+            'total_cuotas' => 3,
+            'numero_cuota' => 1,
+            'saldo_pendiente' => 70.00,
+        ]);
+
+        // Attempt another payment for cuota 1
+        $response = $this->actingAs($this->customerUser)->post(route('pagos.store'), [
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'tipo_pago' => 'qr',
+            'total_cuotas' => 3,
+            'numero_cuota' => 1,
+        ]);
+
+        $response->assertSessionHasErrors(['numero_cuota']);
+        $this->assertEquals(
+            'La cuota número 1 ya ha sido registrada.',
+            session('errors')->first('numero_cuota')
+        );
+    }
+
+    public function test_subsequent_payment_validation_succeeds_on_valid_remaining_numero_cuota(): void
+    {
+        // First payment
+        Pago::create([
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'fecha_pago' => now()->toDateString(),
+            'tipo_pago' => 'efectivo',
+            'estado_pago' => 'completado',
+            'total_cuotas' => 3,
+            'numero_cuota' => 1,
+            'saldo_pendiente' => 70.00,
+        ]);
+
+        // Attempt second payment for cuota 2 (valid)
+        $response = $this->actingAs($this->customerUser)->post(route('pagos.store'), [
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'tipo_pago' => 'qr',
+            'total_cuotas' => 3,
+            'numero_cuota' => 2,
+        ]);
+
+        $pago = Pago::where('numero_cuota', 2)->first();
+        $this->assertNotNull($pago);
+        $response->assertRedirect(route('pagos.show', $pago->id));
+
+        $this->assertDatabaseHas('pagos', [
+            'id_pedido' => $this->customerOrder->id,
+            'monto' => 30.00,
+            'numero_cuota' => 2,
+            'total_cuotas' => 3,
+        ]);
     }
 }

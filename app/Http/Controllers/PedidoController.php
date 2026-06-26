@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pedido;
-use App\Models\DetallePedido;
-use App\Models\Producto;
 use App\Models\Bitacora;
+use App\Models\DetallePedido;
+use App\Models\Envio;
+use App\Models\Pedido;
+use App\Models\Producto;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class PedidoController extends Controller
 {
@@ -20,24 +21,24 @@ class PedidoController extends Controller
      */
     private function authorizePedidoAction(string $action, ?Pedido $pedido = null): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(401, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'pedidos.ver',
-            'show'    => 'pedidos.ver',
-            'create'  => 'pedidos.crear',
-            'store'   => 'pedidos.crear',
-            'edit'    => 'pedidos.editar',
-            'update'  => 'pedidos.editar',
+            'index' => 'pedidos.ver',
+            'show' => 'pedidos.ver',
+            'create' => 'pedidos.crear',
+            'store' => 'pedidos.crear',
+            'edit' => 'pedidos.editar',
+            'update' => 'pedidos.editar',
             'destroy' => 'pedidos.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'pedidos.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre pedidos.');
         }
 
@@ -63,7 +64,7 @@ class PedidoController extends Controller
         $roleName = Auth::user()->role->nombre;
 
         $query = Pedido::query()
-            ->with('cliente:id,nombre,apellido,email,username,ci')
+            ->with(['cliente:id,nombre,apellido,email,username,ci', 'pagos'])
             ->where('state', 'activo');
 
         // Customers can only see their own orders
@@ -80,10 +81,10 @@ class PedidoController extends Controller
                 if ($roleName !== 'Cliente') {
                     $sub->orWhereHas('cliente', function ($custQuery) use ($search) {
                         $custQuery->where('nombre', 'like', "%{$search}%")
-                                  ->orWhere('apellido', 'like', "%{$search}%")
-                                  ->orWhere('username', 'like', "%{$search}%")
-                                  ->orWhere('email', 'like', "%{$search}%")
-                                  ->orWhere('ci', 'like', "%{$search}%");
+                            ->orWhere('apellido', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('ci', 'like', "%{$search}%");
                     });
                 }
             });
@@ -103,7 +104,7 @@ class PedidoController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
@@ -120,10 +121,10 @@ class PedidoController extends Controller
             ->with([
                 'ofertas' => function ($query) {
                     $query->where('estado_oferta', 'activa')
-                          ->where('fecha_inicio', '<=', now()->toDateString())
-                          ->where('fecha_fin', '>=', now()->toDateString())
-                          ->where('state', 'activo');
-                }
+                        ->where('fecha_inicio', '<=', now()->toDateString())
+                        ->where('fecha_fin', '>=', now()->toDateString())
+                        ->where('state', 'activo');
+                },
             ])
             ->orderBy('nombre')
             ->get();
@@ -169,8 +170,9 @@ class PedidoController extends Controller
                 // 1. Check stock
                 if ($producto->stock < $item['cantidad']) {
                     DB::rollBack();
+
                     return back()->withErrors([
-                        'items' => "El producto '{$producto->nombre}' no tiene suficiente stock. Disponible: {$producto->stock} unidades."
+                        'items' => "El producto '{$producto->nombre}' no tiene suficiente stock. Disponible: {$producto->stock} unidades.",
                     ])->withInput();
                 }
 
@@ -182,14 +184,14 @@ class PedidoController extends Controller
                     ->where('state', 'activo')
                     ->first();
 
-                $precioVenta = (float)$producto->precio_venta;
+                $precioVenta = (float) $producto->precio_venta;
                 $descuento = 0.0;
 
                 if ($offer) {
                     if ($offer->tipo_descuento === 'porcentaje') {
-                        $descuento = $precioVenta * ((float)$offer->valor_descuento / 100);
+                        $descuento = $precioVenta * ((float) $offer->valor_descuento / 100);
                     } else {
-                        $descuento = (float)$offer->valor_descuento;
+                        $descuento = (float) $offer->valor_descuento;
                     }
                 }
 
@@ -202,7 +204,7 @@ class PedidoController extends Controller
                     'precio_venta' => $precioVenta,
                     'descuento' => $descuento,
                     'subtotal' => $subtotal,
-                    'producto_model' => $producto // save model reference to update stock
+                    'producto_model' => $producto, // save model reference to update stock
                 ];
             }
 
@@ -251,7 +253,8 @@ class PedidoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Ocurrió un error al procesar el pedido: ' . $e->getMessage()])->withInput();
+
+            return back()->withErrors(['error' => 'Ocurrió un error al procesar el pedido: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -268,7 +271,7 @@ class PedidoController extends Controller
 
         $pedido->load([
             'cliente:id,nombre,apellido,email,username,ci,telefono,direccion',
-            'detalles.producto:id,nombre,codigo_qr,precio_venta,foto'
+            'detalles.producto:id,nombre,codigo_qr,precio_venta,foto',
         ]);
 
         return Inertia::render('pedidos/Show', [
@@ -276,7 +279,7 @@ class PedidoController extends Controller
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
-            ]
+            ],
         ]);
     }
 
@@ -335,6 +338,7 @@ class PedidoController extends Controller
                     $producto = $detalle->producto;
                     if ($producto->stock < $detalle->cantidad) {
                         DB::rollBack();
+
                         return back()->with('error', "No hay suficiente stock para reactivar este pedido. Producto '{$producto->nombre}' solo tiene {$producto->stock} unidades disponibles.");
                     }
                     $producto->decrement('stock', $detalle->cantidad);
@@ -349,11 +353,11 @@ class PedidoController extends Controller
 
             // Automatic shipment creation hook
             if ($newStatus === 'confirmado' && $oldStatus !== 'confirmado') {
-                $hasShipment = \App\Models\Envio::where('id_pedido', $pedido->id)
+                $hasShipment = Envio::where('id_pedido', $pedido->id)
                     ->where('state', 'activo')
                     ->exists();
-                if (!$hasShipment) {
-                    \App\Models\Envio::create([
+                if (! $hasShipment) {
+                    Envio::create([
                         'id_pedido' => $pedido->id,
                         'id_distribuidor' => null,
                         'direccion_entrega' => $pedido->cliente->direccion ?? 'Sin dirección especificada',
@@ -369,7 +373,7 @@ class PedidoController extends Controller
                 'id_usuario' => Auth::id(),
                 'evento' => $event,
                 'ip' => $request->ip(),
-                'recurso' => 'pedidos/' . $pedido->id,
+                'recurso' => 'pedidos/'.$pedido->id,
                 'detalle' => json_encode([
                     'id' => $pedido->id,
                     'estado_anterior' => $oldStatus,
@@ -381,11 +385,13 @@ class PedidoController extends Controller
             DB::commit();
 
             $msg = ($newStatus === 'cancelado') ? 'Pedido cancelado correctamente.' : 'Estado del pedido actualizado.';
+
             return back()->with('success', $msg);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Ocurrió un error al actualizar el pedido: ' . $e->getMessage());
+
+            return back()->with('error', 'Ocurrió un error al actualizar el pedido: '.$e->getMessage());
         }
     }
 
@@ -417,7 +423,7 @@ class PedidoController extends Controller
                 'id_usuario' => Auth::id(),
                 'evento' => 'eliminar_pedido',
                 'ip' => $request->ip(),
-                'recurso' => 'pedidos/' . $pedido->id,
+                'recurso' => 'pedidos/'.$pedido->id,
                 'detalle' => json_encode([
                     'id' => $pedido->id,
                     'state' => 'inactivo',
@@ -431,7 +437,8 @@ class PedidoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error al eliminar el pedido: ' . $e->getMessage());
+
+            return back()->with('error', 'Error al eliminar el pedido: '.$e->getMessage());
         }
     }
 }

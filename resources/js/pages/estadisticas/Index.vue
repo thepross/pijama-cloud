@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-    TrendingUp, ShoppingBag, AlertCircle, AlertTriangle, Calendar, 
-    Printer, RefreshCw, Banknote, Award, Shirt 
+    ShoppingBag, AlertCircle, AlertTriangle, Calendar, 
+    Printer, RefreshCw, Banknote 
 } from 'lucide-vue-next';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 interface KpiType {
     ingresos_totales: number;
@@ -69,66 +72,263 @@ const refreshData = () => {
     router.get(route('estadisticas.index'), {}, { replace: true });
 };
 
-// Calculate total sales category to find shares
-const totalCategorySales = computed(() => {
-    return props.ventas_categorias.reduce((sum, item) => sum + item.ventas, 0);
-});
 
-// Calculate total claims to find ratio percentages
-const totalClaims = computed(() => {
-    const r = props.reclamos_ratio;
-    return r.pendiente + r.en_proceso + r.atendido + r.rechazado;
-});
 
-// SVG Line Chart Calculations for Sales Trend
-const svgWidth = 500;
-const svgHeight = 220;
-const padding = 30;
+const salesChartCanvas = ref<HTMLCanvasElement | null>(null);
+const categoriesChartCanvas = ref<HTMLCanvasElement | null>(null);
+const claimsChartCanvas = ref<HTMLCanvasElement | null>(null);
 
-const trendPoints = computed(() => {
-    if (props.ventas_diarias.length === 0) {
-        return [];
+let salesChart: Chart | null = null;
+let categoriesChart: Chart | null = null;
+let claimsChart: Chart | null = null;
+
+const initSalesChart = () => {
+    if (!salesChartCanvas.value) return;
+    
+    if (salesChart) {
+        salesChart.destroy();
     }
-
-    const maxRevenue = Math.max(...props.ventas_diarias.map(p => p.revenue), 10);
-    const minRevenue = 0;
-    const revenueRange = maxRevenue - minRevenue;
-
-    const totalPoints = props.ventas_diarias.length;
-    const xStep = totalPoints > 1 ? (svgWidth - padding * 2) / (totalPoints - 1) : 0;
-
-    return props.ventas_diarias.map((point, index) => {
-        const x = padding + index * xStep;
-        const y = svgHeight - padding - ((point.revenue - minRevenue) / revenueRange) * (svgHeight - padding * 2);
-        return {
-            x,
-            y,
-            date: point.date,
-            revenue: point.revenue,
-            orders_count: point.orders_count,
-        };
+    
+    const ctx = salesChartCanvas.value.getContext('2d');
+    if (!ctx) return;
+    
+    const labels = props.ventas_diarias.map(point => point.date);
+    const data = props.ventas_diarias.map(point => point.revenue);
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+    
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Ingresos',
+                data,
+                fill: true,
+                backgroundColor: gradient,
+                borderColor: '#6366f1',
+                borderWidth: 2,
+                tension: 0.4,
+                pointBackgroundColor: '#6366f1',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' Bs. ' + Number(context.raw).toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                y: {
+                    border: {
+                        dash: [5, 5]
+                    },
+                    grid: {
+                        color: 'rgba(156, 163, 175, 0.15)'
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        },
+                        callback: function(value) {
+                            return 'Bs. ' + value;
+                        }
+                    }
+                }
+            }
+        }
     });
+};
+
+const initCategoriesChart = () => {
+    if (!categoriesChartCanvas.value) return;
+    
+    if (categoriesChart) {
+        categoriesChart.destroy();
+    }
+    
+    const ctx = categoriesChartCanvas.value.getContext('2d');
+    if (!ctx) return;
+    
+    const labels = props.ventas_categorias.map(item => item.categoria);
+    const data = props.ventas_categorias.map(item => item.ventas);
+    
+    categoriesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: [
+                    '#6366f1',
+                    '#a855f7',
+                    '#ec4899',
+                    '#0ea5e9',
+                    '#10b981',
+                    '#f59e0b',
+                ],
+                borderWidth: 1,
+                borderColor: 'transparent'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 11
+                        },
+                        color: 'currentColor'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = Number(context.raw);
+                            const total = context.dataset.data.reduce((a: any, b: any) => Number(a) + Number(b), 0) as number;
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0;
+                            return ` Bs. ${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+};
+
+const initClaimsChart = () => {
+    if (!claimsChartCanvas.value) return;
+    
+    if (claimsChart) {
+        claimsChart.destroy();
+    }
+    
+    const ctx = claimsChartCanvas.value.getContext('2d');
+    if (!ctx) return;
+    
+    const r = props.reclamos_ratio;
+    
+    claimsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Pendientes', 'En Proceso', 'Atendidos', 'Rechazados'],
+            datasets: [{
+                data: [r.pendiente, r.en_proceso, r.atendido, r.rechazado],
+                backgroundColor: [
+                    'rgba(245, 158, 11, 0.85)',
+                    'rgba(37, 99, 235, 0.85)',
+                    'rgba(16, 185, 129, 0.85)',
+                    'rgba(220, 38, 38, 0.85)',
+                ],
+                borderColor: [
+                    '#f59e0b',
+                    '#2563eb',
+                    '#10b981',
+                    '#dc2626',
+                ],
+                borderWidth: 1.5,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ' + context.raw + ' reclamos';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    border: {
+                        dash: [5, 5]
+                    },
+                    grid: {
+                        color: 'rgba(156, 163, 175, 0.15)'
+                    },
+                    ticks: {
+                        precision: 0,
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+
+onMounted(() => {
+    initSalesChart();
+    initCategoriesChart();
+    initClaimsChart();
 });
 
-const svgLinePath = computed(() => {
-    const pts = trendPoints.value;
-    if (pts.length === 0) {
-        return '';
-    }
-    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+onUnmounted(() => {
+    if (salesChart) salesChart.destroy();
+    if (categoriesChart) categoriesChart.destroy();
+    if (claimsChart) claimsChart.destroy();
 });
 
-const svgAreaPath = computed(() => {
-    const pts = trendPoints.value;
-    if (pts.length === 0) {
-        return '';
-    }
-    const linePath = svgLinePath.value;
-    const firstX = pts[0].x;
-    const lastX = pts[pts.length - 1].x;
-    const baseY = svgHeight - padding;
-    return `${linePath} L ${lastX} ${baseY} L ${firstX} ${baseY} Z`;
-});
+watch(() => props.ventas_diarias, () => {
+    initSalesChart();
+}, { deep: true });
+
+watch(() => props.ventas_categorias, () => {
+    initCategoriesChart();
+}, { deep: true });
+
+watch(() => props.reclamos_ratio, () => {
+    initClaimsChart();
+}, { deep: true });
 
 // Print Report action
 const printReport = () => {
@@ -208,7 +408,7 @@ const printReport = () => {
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 print:grid-cols-4 print:gap-4">
                 
                 <!-- Ingresos Totales -->
-                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform print:p-4 print:shadow-none">
+                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Ingresos Totales</span>
                         <p class="font-mono text-xl sm:text-2xl font-black text-foreground">
@@ -221,7 +421,7 @@ const printReport = () => {
                 </div>
 
                 <!-- Pedidos Concretados -->
-                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform print:p-4 print:shadow-none">
+                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Pedidos Registrados</span>
                         <p class="font-mono text-xl sm:text-2xl font-black text-foreground">
@@ -234,7 +434,7 @@ const printReport = () => {
                 </div>
 
                 <!-- Bajo Stock -->
-                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform print:p-4 print:shadow-none">
+                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Productos Críticos</span>
                         <p class="font-mono text-xl sm:text-2xl font-black text-destructive">
@@ -247,7 +447,7 @@ const printReport = () => {
                 </div>
 
                 <!-- Reclamos Pendientes -->
-                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform print:p-4 print:shadow-none">
+                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Reclamos Activos</span>
                         <p class="font-mono text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
@@ -264,10 +464,9 @@ const printReport = () => {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 print:grid-cols-3 print:gap-4">
                 
                 <!-- Line Chart: Daily Sales Trend (2 cols in desktop) -->
-                <div class="lg:col-span-2 p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-2 print:shadow-none">
+                <div class="lg:col-span-2 p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-2 print:shadow-none relative">
                     <div>
-                        <h2 class="text-lg font-bold text-foreground flex items-center gap-1.5">
-                            <TrendingUp class="h-5 w-5 text-primary" />
+                        <h2 class="text-lg font-bold text-foreground">
                             Evolución Diaria de Ventas
                         </h2>
                         <p class="text-xs text-muted-foreground">
@@ -275,65 +474,16 @@ const printReport = () => {
                         </p>
                     </div>
 
-                    <!-- SVG Chart Container -->
-                    <div class="relative w-full h-[220px] bg-muted/20 border border-border/50 rounded-xl flex items-center justify-center overflow-hidden">
-                        <svg 
-                            v-if="trendPoints.length > 0" 
-                            class="w-full h-full" 
-                            :viewBox="`0 0 ${svgWidth} ${svgHeight}`" 
-                            preserveAspectRatio="none"
-                        >
-                            <!-- Gradients -->
-                            <defs>
-                                <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3" />
-                                    <stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
-                                </linearGradient>
-                            </defs>
-
-                            <!-- Grid Lines -->
-                            <line :x1="padding" :y1="padding" :x2="svgWidth - padding" :y2="padding" stroke="currentColor" class="text-border/20" stroke-dasharray="2" />
-                            <line :x1="padding" :y1="svgHeight/2" :x2="svgWidth - padding" :y2="svgHeight/2" stroke="currentColor" class="text-border/20" stroke-dasharray="2" />
-                            <line :x1="padding" :y1="svgHeight - padding" :x2="svgWidth - padding" :y2="svgHeight - padding" stroke="currentColor" class="text-border/40" />
-
-                            <!-- Area fill -->
-                            <path :d="svgAreaPath" fill="url(#salesGrad)" />
-
-                            <!-- Path Line -->
-                            <path 
-                                :d="svgLinePath" 
-                                fill="none" 
-                                stroke="var(--primary)" 
-                                stroke-width="3" 
-                                stroke-linecap="round" 
-                                stroke-linejoin="round"
-                            />
-
-                            <!-- Data Points circles -->
-                            <circle 
-                                v-for="(p, i) in trendPoints" 
-                                :key="i"
-                                :cx="p.x" 
-                                :cy="p.y" 
-                                r="4" 
-                                fill="var(--background)" 
-                                stroke="var(--primary)" 
-                                stroke-width="2"
-                                class="hover:r-6 cursor-pointer transition-all"
-                            />
-                        </svg>
-                        
-                        <div v-else class="text-center text-xs text-muted-foreground p-6">
-                            ⚠️ No se registran ventas facturadas en el periodo del reporte.
-                        </div>
+                    <!-- Chart Canvas Container -->
+                    <div class="relative w-full h-[220px] bg-muted/20 border border-border/50 rounded-xl p-3">
+                        <canvas ref="salesChartCanvas"></canvas>
                     </div>
                 </div>
 
-                <!-- Progress Bars: Category Share (1 col) -->
+                <!-- Donut Chart: Category Share (1 col) -->
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-1 print:shadow-none">
                     <div>
-                        <h2 class="text-lg font-bold text-foreground flex items-center gap-1.5">
-                            <Shirt class="h-5 w-5 text-primary" />
+                        <h2 class="text-lg font-bold text-foreground">
                             Ventas por Categoría
                         </h2>
                         <p class="text-xs text-muted-foreground">
@@ -341,30 +491,9 @@ const printReport = () => {
                         </p>
                     </div>
 
-                    <div class="space-y-4 pt-2 w-full">
-                        <div v-if="props.ventas_categorias.length === 0" class="text-center text-xs text-muted-foreground py-6">
-                            No se registran categorías de pijamas vendidas.
-                        </div>
-                        <div 
-                            v-else
-                            v-for="item in props.ventas_categorias" 
-                            :key="item.categoria"
-                            class="space-y-1.5"
-                        >
-                            <div class="flex items-center justify-between text-xs font-semibold">
-                                <span class="text-foreground block">{{ item.categoria }}</span>
-                                <span class="font-mono text-muted-foreground block">
-                                    Bs. {{ Number(item.ventas).toFixed(2) }}
-                                </span>
-                            </div>
-                            <!-- Writable HTML progress bar -->
-                            <div class="w-full h-2.5 rounded-full bg-muted border overflow-hidden">
-                                <div 
-                                    class="h-full rounded-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-500"
-                                    :style="{ width: `${totalCategorySales > 0 ? (item.ventas / totalCategorySales) * 100 : 0}%` }"
-                                ></div>
-                            </div>
-                        </div>
+                    <!-- Chart Canvas Container -->
+                    <div class="relative w-full h-[240px] p-2 flex items-center justify-center">
+                        <canvas ref="categoriesChartCanvas"></canvas>
                     </div>
                 </div>
             </div>
@@ -375,8 +504,7 @@ const printReport = () => {
                 <!-- Best Selling Products Table (2 cols in desktop) -->
                 <div class="lg:col-span-2 p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 print:col-span-2 print:shadow-none">
                     <div>
-                        <h2 class="text-lg font-bold text-foreground flex items-center gap-1.5">
-                            <Award class="h-5 w-5 text-primary" />
+                        <h2 class="text-lg font-bold text-foreground">
                             Top 5 Productos Más Vendidos
                         </h2>
                         <p class="text-xs text-muted-foreground">
@@ -429,11 +557,10 @@ const printReport = () => {
                     </div>
                 </div>
 
-                <!-- Claims Resolutive Circular Gauges (1 col) -->
+                <!-- Claims Resolutive Bar Chart & Summary (1 col) -->
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-1 print:shadow-none">
                     <div>
-                        <h2 class="text-lg font-bold text-foreground flex items-center gap-1.5">
-                            <AlertTriangle class="h-5 w-5 text-primary" />
+                        <h2 class="text-lg font-bold text-foreground">
                             Métricas de Reclamos
                         </h2>
                         <p class="text-xs text-muted-foreground">
@@ -441,88 +568,9 @@ const printReport = () => {
                         </p>
                     </div>
 
-                    <!-- Gauges side-by-side grid -->
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        
-                        <!-- Pendiente Gauge -->
-                        <div class="p-3 rounded-xl border border-border bg-card flex flex-col items-center gap-1 text-center">
-                            <svg class="w-12 h-12" viewBox="0 0 36 36">
-                                <path class="text-muted/20" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path 
-                                    class="text-amber-500" 
-                                    stroke="currentColor" 
-                                    stroke-width="3" 
-                                    stroke-linecap="round"
-                                    :stroke-dasharray="`${totalClaims > 0 ? (props.reclamos_ratio.pendiente / totalClaims) * 100 : 0}, 100`" 
-                                    fill="none" 
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                                />
-                                <text x="18" y="21.5" class="font-mono text-[9px] font-bold text-foreground" text-anchor="middle">
-                                    {{ props.reclamos_ratio.pendiente }}
-                                </text>
-                            </svg>
-                            <span class="text-[10px] font-bold text-foreground">Pendientes</span>
-                        </div>
-
-                        <!-- En Proceso Gauge -->
-                        <div class="p-3 rounded-xl border border-border bg-card flex flex-col items-center gap-1 text-center">
-                            <svg class="w-12 h-12" viewBox="0 0 36 36">
-                                <path class="text-muted/20" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path 
-                                    class="text-blue-500" 
-                                    stroke="currentColor" 
-                                    stroke-width="3" 
-                                    stroke-linecap="round"
-                                    :stroke-dasharray="`${totalClaims > 0 ? (props.reclamos_ratio.en_proceso / totalClaims) * 100 : 0}, 100`" 
-                                    fill="none" 
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                                />
-                                <text x="18" y="21.5" class="font-mono text-[9px] font-bold text-foreground" text-anchor="middle">
-                                    {{ props.reclamos_ratio.en_proceso }}
-                                </text>
-                            </svg>
-                            <span class="text-[10px] font-bold text-foreground">En Proceso</span>
-                        </div>
-
-                        <!-- Atendido Gauge -->
-                        <div class="p-3 rounded-xl border border-border bg-card flex flex-col items-center gap-1 text-center">
-                            <svg class="w-12 h-12" viewBox="0 0 36 36">
-                                <path class="text-muted/20" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path 
-                                    class="text-emerald-500" 
-                                    stroke="currentColor" 
-                                    stroke-width="3" 
-                                    stroke-linecap="round"
-                                    :stroke-dasharray="`${totalClaims > 0 ? (props.reclamos_ratio.atendido / totalClaims) * 100 : 0}, 100`" 
-                                    fill="none" 
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                                />
-                                <text x="18" y="21.5" class="font-mono text-[9px] font-bold text-foreground" text-anchor="middle">
-                                    {{ props.reclamos_ratio.atendido }}
-                                </text>
-                            </svg>
-                            <span class="text-[10px] font-bold text-foreground">Atendidos</span>
-                        </div>
-
-                        <!-- Rechazado Gauge -->
-                        <div class="p-3 rounded-xl border border-border bg-card flex flex-col items-center gap-1 text-center">
-                            <svg class="w-12 h-12" viewBox="0 0 36 36">
-                                <path class="text-muted/20" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path 
-                                    class="text-red-500" 
-                                    stroke="currentColor" 
-                                    stroke-width="3" 
-                                    stroke-linecap="round"
-                                    :stroke-dasharray="`${totalClaims > 0 ? (props.reclamos_ratio.rechazado / totalClaims) * 100 : 0}, 100`" 
-                                    fill="none" 
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                                />
-                                <text x="18" y="21.5" class="font-mono text-[9px] font-bold text-foreground" text-anchor="middle">
-                                    {{ props.reclamos_ratio.rechazado }}
-                                </text>
-                            </svg>
-                            <span class="text-[10px] font-bold text-foreground">Rechazados</span>
-                        </div>
+                    <!-- Chart Canvas Container -->
+                    <div class="relative w-full h-[220px] p-2">
+                        <canvas ref="claimsChartCanvas"></canvas>
                     </div>
                 </div>
             </div>
