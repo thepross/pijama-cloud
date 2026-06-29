@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Bitacora;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,40 +13,33 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
-    /**
-     * Authorize user management routes.
-     */
     private function authorizeUserAction(string $action): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'usuarios.ver',
-            'show'    => 'usuarios.ver',
-            'create'  => 'usuarios.crear',
-            'store'   => 'usuarios.crear',
-            'edit'    => 'usuarios.editar',
-            'update'  => 'usuarios.editar',
+            'index' => 'usuarios.ver',
+            'show' => 'usuarios.ver',
+            'create' => 'usuarios.crear',
+            'store' => 'usuarios.crear',
+            'edit' => 'usuarios.editar',
+            'update' => 'usuarios.editar',
             'destroy' => 'usuarios.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'usuarios.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre usuarios.');
         }
     }
 
-    /**
-     * Display a listing of the active users.
-     */
     public function index(Request $request): Response
     {
         $this->authorizeUserAction('index');
@@ -59,10 +53,10 @@ class UserController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('apellido', 'like', "%{$search}%")
-                      ->orWhere('username', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('ci', 'like', "%{$search}%");
+                        ->orWhere('apellido', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('ci', 'like', "%{$search}%");
                 });
             })
             ->when($roleId, function ($query, $roleId) {
@@ -81,13 +75,10 @@ class UserController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new user.
-     */
     public function create(): Response
     {
         $this->authorizeUserAction('create');
@@ -99,9 +90,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created user in database.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeUserAction('store');
@@ -145,7 +133,6 @@ class UserController extends Controller
             'state' => 'activo',
         ]);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'crear_usuario',
@@ -162,9 +149,6 @@ class UserController extends Controller
         return to_route('usuarios.index')->with('success', 'Usuario creado exitosamente.');
     }
 
-    /**
-     * Show the form for editing the specified user.
-     */
     public function edit(User $usuario): Response
     {
         $this->authorizeUserAction('edit');
@@ -181,9 +165,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified user in database.
-     */
     public function update(Request $request, User $usuario): RedirectResponse
     {
         $this->authorizeUserAction('update');
@@ -251,12 +232,11 @@ class UserController extends Controller
             ]);
         }
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'modificar_usuario',
             'ip' => $request->ip(),
-            'recurso' => 'usuarios/' . $usuario->id,
+            'recurso' => 'usuarios/'.$usuario->id,
             'detalle' => json_encode([
                 'id' => $usuario->id,
                 'username' => $usuario->username,
@@ -269,9 +249,6 @@ class UserController extends Controller
         return to_route('usuarios.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
-    /**
-     * Logically delete the specified user from database.
-     */
     public function destroy(Request $request, User $usuario): RedirectResponse
     {
         $this->authorizeUserAction('destroy');
@@ -280,19 +257,17 @@ class UserController extends Controller
             return to_route('usuarios.index')->with('error', 'El usuario ya se encuentra inactivo.');
         }
 
-        // Protect from self-deletion
         if (Auth::id() === $usuario->id) {
             return to_route('usuarios.index')->with('error', 'No puedes eliminar lógicamente tu propia cuenta.');
         }
 
         $usuario->update(['state' => 'inactivo']);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_usuario',
             'ip' => $request->ip(),
-            'recurso' => 'usuarios/' . $usuario->id,
+            'recurso' => 'usuarios/'.$usuario->id,
             'detalle' => json_encode([
                 'id' => $usuario->id,
                 'username' => $usuario->username,

@@ -33,13 +33,13 @@ const form = useForm({
     observacion: '',
 });
 
-// Card inputs (visual only)
+
 const cardNumber = ref('');
 const cardHolder = ref('');
 const cardExpiry = ref('');
 const cardCvv = ref('');
 
-// Computed selected order
+
 const selectedOrder = computed(() => {
     if (!form.id_pedido) {
         return null;
@@ -47,13 +47,13 @@ const selectedOrder = computed(() => {
     return props.pedidos.find(p => p.id === Number(form.id_pedido)) || null;
 });
 
-// Compute if it's the first payment for the selected order
+
 const isFirstPayment = computed(() => {
     if (!selectedOrder.value) return true;
     return selectedOrder.value.total_cuotas_existente === null || selectedOrder.value.total_cuotas_existente === undefined;
 });
 
-// Compute selectable cuota numbers based on total_cuotas and registered ones
+
 const selectableCuotas = computed(() => {
     if (!selectedOrder.value) return [1];
     
@@ -69,7 +69,7 @@ const selectableCuotas = computed(() => {
     return options.length > 0 ? options : [1];
 });
 
-// Auto-fill form fields when order changes
+
 watch(selectedOrder, (newOrder) => {
     if (newOrder) {
         form.monto = Number(newOrder.saldo_pendiente).toFixed(2);
@@ -77,7 +77,7 @@ watch(selectedOrder, (newOrder) => {
         if (newOrder.total_cuotas_existente) {
             form.total_cuotas = newOrder.total_cuotas_existente;
             
-            // Auto-select first available installment
+            
             const available = selectableCuotas.value;
             if (available.length > 0) {
                 form.numero_cuota = available[0];
@@ -95,7 +95,7 @@ watch(selectedOrder, (newOrder) => {
     }
 });
 
-// Watch total_cuotas (for first payment) to ensure numero_cuota resets if invalid
+
 watch(() => form.total_cuotas, (newTotal) => {
     if (isFirstPayment.value) {
         const val = Number(newTotal);
@@ -105,7 +105,7 @@ watch(() => form.total_cuotas, (newTotal) => {
     }
 });
 
-// Pre-fill order if passed as a query param
+
 onMounted(() => {
     if (props.selected_id_pedido) {
         const orderId = Number(props.selected_id_pedido);
@@ -116,7 +116,7 @@ onMounted(() => {
     }
 });
 
-// Detect Card Type (simple regex check)
+
 const cardType = computed(() => {
     const cleanNum = cardNumber.value.replace(/\D/g, '');
     if (cleanNum.startsWith('4')) {
@@ -131,7 +131,7 @@ const cardType = computed(() => {
     return 'generic';
 });
 
-// Formatted Card Number
+
 const formattedCardNumber = computed(() => {
     const cleanNum = cardNumber.value.replace(/\D/g, '').substring(0, 16);
     const parts = [];
@@ -154,7 +154,7 @@ const submit = () => {
         <Head title="Registrar Pago" />
 
         <div class="max-w-5xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center gap-4">
                 <Link :href="route('pagos.index')">
                     <Button variant="outline" size="icon" class="h-9 w-9 rounded-xl shadow-sm">
@@ -172,12 +172,12 @@ const submit = () => {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left/Center: Form (2 cols) -->
+                
                 <div class="lg:col-span-2 space-y-6">
                     <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                         <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-6">
                             
-                            <!-- Order Selection -->
+                            
                             <div class="space-y-2">
                                 <Label for="id_pedido" class="text-sm font-semibold text-foreground">
                                     Seleccionar Pedido <span class="text-destructive">*</span>
@@ -199,7 +199,7 @@ const submit = () => {
                                 <InputError :message="form.errors.id_pedido" />
                             </div>
 
-                            <!-- Selected Order Status Summary Panel -->
+                            
                             <div 
                                 v-if="selectedOrder" 
                                 class="p-4 rounded-xl border border-border bg-muted/30 grid grid-cols-3 gap-4 text-center animate-in fade-in slide-in-from-top-1"
@@ -218,7 +218,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- Monto & Cuotas grid -->
+                            
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="space-y-2">
                                     <Label for="monto" class="text-sm font-semibold text-foreground">
@@ -270,12 +270,12 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- Payment Method Selector -->
+                            
                             <div class="space-y-3">
                                 <Label class="text-sm font-semibold text-foreground">Método de Pago</Label>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     
-                                    <!-- QR option -->
+                                    
                                     <label 
                                         :class="[
                                             'p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:bg-accent/40',
@@ -288,7 +288,7 @@ const submit = () => {
                                         <span class="text-[10px] text-muted-foreground text-center leading-tight">Pasarela PagoFacil</span>
                                     </label>
 
-                                    <!-- Tarjeta option -->
+                                    
                                     <label 
                                         :class="[
                                             'p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:bg-accent/40',
@@ -301,7 +301,7 @@ const submit = () => {
                                         <span class="text-[10px] text-muted-foreground text-center leading-tight">Crédito o Débito</span>
                                     </label>
 
-                                    <!-- Efectivo option -->
+                                    
                                     <label 
                                         :class="[
                                             'p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:bg-accent/40',
@@ -316,8 +316,8 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- Dynamic Information Panel based on Method -->
-                            <!-- Cash Instructions -->
+                            
+                            
                             <div 
                                 v-if="form.tipo_pago === 'efectivo'"
                                 class="p-4 rounded-xl border border-border bg-muted/40 text-xs text-muted-foreground flex gap-2.5 animate-in slide-in-from-bottom-2 fade-in"
@@ -329,7 +329,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- QR PagoFacil Description -->
+                            
                             <div 
                                 v-if="form.tipo_pago === 'qr'"
                                 class="p-4 rounded-xl border border-border bg-muted/40 text-xs text-muted-foreground flex gap-2.5 animate-in slide-in-from-bottom-2 fade-in"
@@ -341,7 +341,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- Credit Card Visual Fields -->
+                            
                             <div 
                                 v-if="form.tipo_pago === 'tarjeta'" 
                                 class="space-y-4 border-t border-border pt-4 animate-in slide-in-from-bottom-2 fade-in"
@@ -371,7 +371,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- Observaciones -->
+                            
                             <div class="space-y-2">
                                 <Label for="observacion" class="text-sm font-semibold text-foreground">Nota / Observación</Label>
                                 <textarea
@@ -384,7 +384,7 @@ const submit = () => {
                                 <InputError :message="form.errors.observacion" />
                             </div>
 
-                            <!-- Actions -->
+                            
                             <div class="pt-4 border-t border-border flex items-center justify-end gap-3">
                                 <Link :href="route('pagos.index')">
                                     <Button variant="outline" type="button" class="rounded-xl">
@@ -405,7 +405,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Right Column: Interactive Card Preview (Only when Card is selected) -->
+                
                 <div class="lg:col-span-1 space-y-6">
                     <div 
                         v-if="form.tipo_pago === 'tarjeta'" 
@@ -413,9 +413,9 @@ const submit = () => {
                     >
                         <h3 class="text-sm font-bold text-foreground">Vista Previa de Tarjeta</h3>
                         
-                        <!-- Credit Card Container -->
+                        
                         <div class="relative w-full h-48 rounded-xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 text-white p-6 shadow-md overflow-hidden flex flex-col justify-between select-none">
-                            <!-- Glow effects -->
+                            
                             <div class="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-primary/20 blur-xl"></div>
                             <div class="absolute -left-10 -bottom-10 w-32 h-32 rounded-full bg-indigo-500/20 blur-xl"></div>
 
@@ -423,7 +423,7 @@ const submit = () => {
                                 <div class="space-y-1">
                                     <span class="text-[8px] uppercase tracking-widest text-slate-400 font-bold">PIJAMAS CLOUD SECURE</span>
                                     <div class="h-7 w-10 rounded bg-amber-500/80 border border-amber-400/40 relative overflow-hidden">
-                                        <!-- Chip layout -->
+                                        
                                         <div class="absolute top-1/2 left-0 right-0 h-[1px] bg-amber-900/30"></div>
                                         <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-amber-900/30"></div>
                                     </div>
@@ -436,7 +436,7 @@ const submit = () => {
                             </div>
 
                             <div class="space-y-4">
-                                <!-- Card Number -->
+                                
                                 <p class="font-mono text-lg tracking-widest font-semibold text-center text-slate-100">
                                     {{ formattedCardNumber }}
                                 </p>
@@ -460,19 +460,6 @@ const submit = () => {
                         <p class="text-xs text-muted-foreground text-center italic">
                             Los datos no se almacenan ni se transmiten. Este pago se confirmará inmediatamente como una simulación estética.
                         </p>
-                    </div>
-
-                    <!-- Informative Card for other payment modes -->
-                    <div v-else class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4">
-                        <h3 class="text-sm font-bold text-foreground">Detalle del Pago</h3>
-                        <div class="space-y-3 text-xs leading-relaxed text-muted-foreground">
-                            <p>
-                                Selecciona un pedido con cuotas pendientes e introduce la cantidad exacta. Puedes realizar abonos fraccionados en múltiples cuotas.
-                            </p>
-                            <p>
-                                El sistema recalcula en tiempo real el <strong>saldo pendiente</strong> del pedido y lo almacena para futuras conciliaciones.
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>

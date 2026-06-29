@@ -59,7 +59,7 @@ const submit = () => {
         <Head title="Editar Producto" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -79,11 +79,11 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form -->
+            
             <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Inputs column -->
+                
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- General Details -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                         <h2 class="text-lg font-bold text-foreground">Detalles del Producto</h2>
 
@@ -168,7 +168,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <!-- Stock and prices -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                         <h2 class="text-lg font-bold text-foreground">Inventario y Costos</h2>
 
@@ -208,7 +208,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- QR sidebar column -->
+                
                 <div class="space-y-6">
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex flex-col items-center text-center space-y-4">
                         <QrCode class="h-8 w-8 text-primary" />
@@ -228,7 +228,7 @@ const submit = () => {
                         </span>
                     </div>
 
-                    <!-- Actions -->
+                    
                     <div class="flex items-center justify-end gap-3">
                         <Link :href="route('productos.index')">
                             <Button variant="outline" type="button" class="w-full rounded-xl">Cancelar</Button>

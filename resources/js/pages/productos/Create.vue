@@ -37,7 +37,7 @@ const submit = () => {
         <Head title="Registrar Producto" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -57,9 +57,9 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form -->
+            
             <form @submit.prevent="submit" class="space-y-6">
-                <!-- Info Gral -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Detalles del Producto</h2>
 
@@ -146,7 +146,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Stock and prices -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Inventario y Costos</h2>
 
@@ -185,7 +185,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Actions -->
+                
                 <div class="flex items-center justify-end gap-3">
                     <Link :href="route('productos.index')">
                         <Button variant="outline" type="button" class="rounded-xl">Cancelar</Button>

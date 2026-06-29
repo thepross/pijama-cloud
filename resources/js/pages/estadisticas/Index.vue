@@ -330,7 +330,7 @@ watch(() => props.reclamos_ratio, () => {
     initClaimsChart();
 }, { deep: true });
 
-// Print Report action
+
 const printReport = () => {
     window.print();
 };
@@ -341,7 +341,7 @@ const printReport = () => {
         <Head title="Reportes y Estadísticas" />
 
         <div class="space-y-6 max-w-7xl mx-auto print:space-y-4 print:p-0">
-            <!-- Header section (Hidden in print) -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -362,7 +362,7 @@ const printReport = () => {
                 </div>
             </div>
 
-            <!-- Header Section in Print Only -->
+            
             <div class="hidden print:flex flex-col border-b border-border pb-4 mb-4">
                 <span class="text-xs uppercase tracking-widest text-muted-foreground font-bold">PIJAMAS CLOUD REPORTES OFICIALES</span>
                 <h1 class="text-2xl font-bold text-foreground mt-1">Informe General de Rendimiento Comercial</h1>
@@ -371,7 +371,7 @@ const printReport = () => {
                 </p>
             </div>
 
-            <!-- Filters Section (Hidden in print) -->
+            
             <div class="p-4 rounded-2xl border border-border bg-card shadow-sm flex flex-col sm:flex-row items-end gap-4 justify-between print:hidden">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
                     <div class="space-y-2">
@@ -404,10 +404,10 @@ const printReport = () => {
                 </Button>
             </div>
 
-            <!-- KPI Cards Grid -->
+            
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 print:grid-cols-4 print:gap-4">
                 
-                <!-- Ingresos Totales -->
+                
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Ingresos Totales</span>
@@ -420,7 +420,7 @@ const printReport = () => {
                     </div>
                 </div>
 
-                <!-- Pedidos Concretados -->
+                
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Pedidos Registrados</span>
@@ -433,7 +433,7 @@ const printReport = () => {
                     </div>
                 </div>
 
-                <!-- Bajo Stock -->
+                
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Productos Críticos</span>
@@ -446,7 +446,7 @@ const printReport = () => {
                     </div>
                 </div>
 
-                <!-- Reclamos Pendientes -->
+                
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm flex items-center justify-between print:p-4 print:shadow-none">
                     <div class="space-y-1">
                         <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Reclamos Activos</span>
@@ -460,10 +460,10 @@ const printReport = () => {
                 </div>
             </div>
 
-            <!-- Charts Section (2-cols: Trend Line & Category comparative) -->
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 print:grid-cols-3 print:gap-4">
                 
-                <!-- Line Chart: Daily Sales Trend (2 cols in desktop) -->
+                
                 <div class="lg:col-span-2 p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-2 print:shadow-none relative">
                     <div>
                         <h2 class="text-lg font-bold text-foreground">
@@ -474,13 +474,13 @@ const printReport = () => {
                         </p>
                     </div>
 
-                    <!-- Chart Canvas Container -->
+                    
                     <div class="relative w-full h-[220px] bg-muted/20 border border-border/50 rounded-xl p-3">
                         <canvas ref="salesChartCanvas"></canvas>
                     </div>
                 </div>
 
-                <!-- Donut Chart: Category Share (1 col) -->
+                
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-1 print:shadow-none">
                     <div>
                         <h2 class="text-lg font-bold text-foreground">
@@ -491,17 +491,17 @@ const printReport = () => {
                         </p>
                     </div>
 
-                    <!-- Chart Canvas Container -->
+                    
                     <div class="relative w-full h-[240px] p-2 flex items-center justify-center">
                         <canvas ref="categoriesChartCanvas"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Third Section: Top Products & Claims gauges -->
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 print:grid-cols-3 print:gap-4">
                 
-                <!-- Best Selling Products Table (2 cols in desktop) -->
+                
                 <div class="lg:col-span-2 p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 print:col-span-2 print:shadow-none">
                     <div>
                         <h2 class="text-lg font-bold text-foreground">
@@ -557,7 +557,7 @@ const printReport = () => {
                     </div>
                 </div>
 
-                <!-- Claims Resolutive Bar Chart & Summary (1 col) -->
+                
                 <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:col-span-1 print:shadow-none">
                     <div>
                         <h2 class="text-lg font-bold text-foreground">
@@ -568,7 +568,7 @@ const printReport = () => {
                         </p>
                     </div>
 
-                    <!-- Chart Canvas Container -->
+                    
                     <div class="relative w-full h-[220px] p-2">
                         <canvas ref="claimsChartCanvas"></canvas>
                     </div>
@@ -579,7 +579,7 @@ const printReport = () => {
 </template>
 
 <style>
-/* Custom Print Styles */
+
 @media print {
     body {
         background-color: white !important;

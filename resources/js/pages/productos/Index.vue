@@ -102,7 +102,7 @@ const submitRating = () => {
         preserveScroll: true,
         onSuccess: () => {
             ratingForm.reset('comentario');
-            // Refresh detail modal view with the newly loaded review from paginated props
+            
             const updatedProduct = props.productos.data.find(p => p.id === selectedProduct.value?.id);
             if (updatedProduct) {
                 selectedProduct.value = updatedProduct;
@@ -125,7 +125,7 @@ const deleteReview = (id: number) => {
     }
 };
 
-// Apply filters
+
 watch([search, category, size, gender], ([newSearch, newCat, newSize, newGen]) => {
     router.get(
         route('productos.index'),
@@ -148,7 +148,7 @@ const deleteProduct = () => {
     }
 };
 
-// Calculate final price based on active offers
+
 const calculatePrice = (product: ProductType) => {
     const basePrice = Number(product.precio_venta);
     if (product.ofertas.length === 0) {
@@ -176,7 +176,7 @@ const calculatePrice = (product: ProductType) => {
         <Head title="Productos Textiles" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -196,7 +196,7 @@ const calculatePrice = (product: ProductType) => {
                 </div>
             </div>
 
-            <!-- Flash alerts -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <Check class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -206,7 +206,7 @@ const calculatePrice = (product: ProductType) => {
                 {{ props.flash.error }}
             </div>
 
-            <!-- Search and filters -->
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="relative md:col-span-2">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -259,9 +259,9 @@ const calculatePrice = (product: ProductType) => {
                 </div>
             </div>
 
-            <!-- DUAL VIEW LOGIC -->
+            
 
-            <!-- View 1: Customer Grid Catalog -->
+            
             <div v-if="!isStaff" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <div v-if="props.productos.data.length === 0" class="col-span-full py-12 text-center text-muted-foreground">
                     No se encontraron prendas textiles que coincidan con los filtros seleccionados.
@@ -273,7 +273,7 @@ const calculatePrice = (product: ProductType) => {
                     @click="openProductDetails(prod)"
                     class="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
                 >
-                    <!-- Product image -->
+                    
                     <div class="relative aspect-square w-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                         <img
                             v-if="prod.foto"
@@ -283,7 +283,7 @@ const calculatePrice = (product: ProductType) => {
                         />
                         <Shirt v-else class="h-20 w-20 text-neutral-300 dark:text-neutral-700" />
 
-                        <!-- Active offer tag -->
+                        
                         <div
                             v-if="calculatePrice(prod).hasDiscount"
                             class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm"
@@ -291,7 +291,7 @@ const calculatePrice = (product: ProductType) => {
                             ¡Oferta!
                         </div>
 
-                        <!-- Float Edit/Delete Buttons for authorized users -->
+                        
                         <div 
                             v-if="$page.props.auth.permissions.includes('productos.editar') || $page.props.auth.permissions.includes('productos.eliminar')"
                             class="absolute top-3 right-3 flex items-center gap-1.5 z-20"
@@ -323,7 +323,7 @@ const calculatePrice = (product: ProductType) => {
                         </div>
                     </div>
 
-                    <!-- Details -->
+                    
                     <div class="p-4 flex-1 flex flex-col">
                         <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
                             {{ prod.categoria }} · {{ prod.genero }}
@@ -332,7 +332,7 @@ const calculatePrice = (product: ProductType) => {
                             {{ prod.nombre }}
                         </h3>
 
-                        <!-- Rating stars -->
+                        
                         <div class="flex items-center gap-0.5 mb-2">
                             <Star 
                                 v-for="i in 5" 
@@ -351,7 +351,7 @@ const calculatePrice = (product: ProductType) => {
                             {{ prod.descripcion || 'Pijama de diseño exclusivo suave y transpirable.' }}
                         </p>
 
-                        <!-- Attributes badges -->
+                        
                         <div class="flex flex-wrap gap-1.5 mb-4">
                             <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
                                 {{ prod.talla }}
@@ -364,7 +364,7 @@ const calculatePrice = (product: ProductType) => {
                             </span>
                         </div>
 
-                        <!-- Price & buy -->
+                        
                         <div class="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
                             <div>
                                 <template v-if="calculatePrice(prod).hasDiscount">
@@ -556,12 +556,12 @@ const calculatePrice = (product: ProductType) => {
                         ¿Eliminar Producto del Catálogo?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación lógica</strong> del producto <strong>"{{ productToDelete?.nombre }}"</strong>. El producto ya no se mostrará a los clientes ni podrá ser comprado.
+                        Esta acción realizará la <strong>eliminación</strong> del producto <strong>"{{ productToDelete?.nombre }}"</strong>. El producto ya no se mostrará a los clientes ni podrá ser comprado.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="productToDelete = null" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deleteProduct" class="rounded-xl">Eliminar Lógicamente</Button>
+                    <Button variant="destructive" @click="deleteProduct" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

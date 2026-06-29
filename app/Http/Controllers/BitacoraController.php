@@ -13,19 +13,15 @@ class BitacoraController extends Controller
 {
     private function authorizeBitacoraAccess(): void
     {
-        if (!Auth::check() || !Auth::user()->role->hasPermission('bitacoras.ver')) {
+        if (! Auth::check() || ! Auth::user()->role->hasPermission('bitacoras.ver')) {
             abort(403, 'No tienes permiso para ver la bitácora del sistema.');
         }
     }
 
-    /**
-     * Display a listing of log entries.
-     */
     public function index(Request $request): Response
     {
         $this->authorizeBitacoraAccess();
 
-        // 1. Audit access to logs
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'ver_bitacora',
@@ -45,14 +41,14 @@ class BitacoraController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('evento', 'like', "%{$search}%")
-                      ->orWhere('recurso', 'like', "%{$search}%")
-                      ->orWhere('detalle', 'like', "%{$search}%")
-                      ->orWhere('ip', 'like', "%{$search}%")
-                      ->orWhereHas('usuario', function ($uQuery) use ($search) {
-                          $uQuery->where('nombre', 'like', "%{$search}%")
-                                 ->orWhere('apellido', 'like', "%{$search}%")
-                                 ->orWhere('username', 'like', "%{$search}%");
-                      });
+                        ->orWhere('recurso', 'like', "%{$search}%")
+                        ->orWhere('detalle', 'like', "%{$search}%")
+                        ->orWhere('ip', 'like', "%{$search}%")
+                        ->orWhereHas('usuario', function ($uQuery) use ($search) {
+                            $uQuery->where('nombre', 'like', "%{$search}%")
+                                ->orWhere('apellido', 'like', "%{$search}%")
+                                ->orWhere('username', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($userId, function ($query, $userId) {
@@ -71,7 +67,6 @@ class BitacoraController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Fetch auxiliary data for filter selectors
         $usuarios = User::where('state', 'activo')
             ->orderBy('nombre')
             ->get(['id', 'nombre', 'apellido', 'username']);
@@ -80,9 +75,8 @@ class BitacoraController extends Controller
             ->orderBy('evento')
             ->pluck('evento');
 
-        // Log Stats summary for KPIs
         $totalLogs = Bitacora::count();
-        
+
         $mostActiveUser = Bitacora::selectRaw('id_usuario, COUNT(*) as count')
             ->whereNotNull('id_usuario')
             ->groupBy('id_usuario')
@@ -98,20 +92,20 @@ class BitacoraController extends Controller
         $kpis = [
             'total_registros' => $totalLogs,
             'usuario_activo' => $mostActiveUser ? [
-                'name' => $mostActiveUser->usuario ? ($mostActiveUser->usuario->nombre . ' ' . $mostActiveUser->usuario->apellido) : 'Usuario Eliminado',
+                'name' => $mostActiveUser->usuario ? ($mostActiveUser->usuario->nombre.' '.$mostActiveUser->usuario->apellido) : 'Usuario Eliminado',
                 'username' => $mostActiveUser->usuario ? $mostActiveUser->usuario->username : '',
-                'count' => $mostActiveUser->count
+                'count' => $mostActiveUser->count,
             ] : null,
             'evento_frecuente' => $frequentEvent ? [
                 'evento' => $frequentEvent->evento,
-                'count' => $frequentEvent->count
+                'count' => $frequentEvent->count,
             ] : null,
-            'acciones_modificacion' => Bitacora::where(function($q) {
+            'acciones_modificacion' => Bitacora::where(function ($q) {
                 $q->where('evento', 'like', '%crear%')
-                  ->orWhere('evento', 'like', '%editar%')
-                  ->orWhere('evento', 'like', '%eliminar%')
-                  ->orWhere('evento', 'like', '%accion_%');
-            })->count()
+                    ->orWhere('evento', 'like', '%editar%')
+                    ->orWhere('evento', 'like', '%eliminar%')
+                    ->orWhere('evento', 'like', '%accion_%');
+            })->count(),
         ];
 
         return Inertia::render('bitacoras/Index', [

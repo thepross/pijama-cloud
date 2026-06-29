@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAppearance } from '@/composables/useAppearance';
-import { Sun, Moon, Clock, Type, ShieldAlert, Sparkles, Smile, ShieldCheck, HelpCircle } from 'lucide-vue-next';
+import { Sun, Moon, Clock, Type, ShieldAlert } from 'lucide-vue-next';
 
 const {
     appearance,
@@ -14,10 +14,10 @@ const {
 } = useAppearance();
 
 const themesList = [
-    { value: 'default', label: 'Ecológico (Default)', icon: Sparkles, colorClass: 'bg-neutral-200 dark:bg-neutral-800' },
-    { value: 'ninos', label: 'Modo Niños', icon: Smile, colorClass: 'bg-pink-100 text-pink-600 dark:bg-pink-900/20' },
-    { value: 'jovenes', label: 'Modo Jóvenes', icon: HelpCircle, colorClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/20' },
-    { value: 'adultos', label: 'Modo Adultos', icon: ShieldCheck, colorClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20' },
+    { value: 'default', label: 'Ecológico (Default)' },
+    { value: 'ninos', label: 'Modo Niños' },
+    { value: 'jovenes', label: 'Modo Jóvenes' },
+    { value: 'adultos', label: 'Modo Adultos' },
 ] as const;
 
 const appearancesList = [
@@ -34,35 +34,28 @@ const fontSizesList = [
 </script>
 
 <template>
-    <div class="space-y-8">
-        <!-- Theme Picker -->
-        <div class="space-y-3">
+    <div class="space-y-6">
+        <div class="space-y-2">
             <h3 class="text-sm font-medium leading-none text-foreground">Seleccionar Tema</h3>
-            <p class="text-xs text-muted-foreground">Elige una de las 3 experiencias visuales personalizadas.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <button
                     v-for="t in themesList"
                     :key="t.value"
                     @click="updateThemePreference(t.value)"
                     :class="[
-                        'flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all hover:scale-[1.02]',
+                        'flex items-center justify-center p-3 rounded-xl border transition-all text-center',
                         theme === t.value
-                            ? 'border-primary bg-accent/50 shadow-md'
-                            : 'border-border bg-card'
+                            ? 'border-primary bg-primary/5 text-primary font-semibold shadow-sm'
+                            : 'border-border bg-card text-foreground hover:bg-accent/50'
                     ]"
                 >
-                    <div :class="['p-3 rounded-full mb-2', t.colorClass]">
-                        <component :is="t.icon" class="h-6 w-6" />
-                    </div>
-                    <span class="text-sm font-medium text-foreground">{{ t.label }}</span>
+                    <span class="text-sm font-medium">{{ t.label }}</span>
                 </button>
             </div>
         </div>
 
-        <!-- Mode Picker (Day/Night) -->
-        <div class="space-y-3">
+        <div class="space-y-2">
             <h3 class="text-sm font-medium leading-none text-foreground">Modo Horario (Día / Noche)</h3>
-            <p class="text-xs text-muted-foreground">Cambia el aspecto del sitio según tus preferencias o configura el modo automático basado en tu hora local.</p>
             <div class="inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
                 <button
                     v-for="app in appearancesList"
@@ -81,10 +74,8 @@ const fontSizesList = [
             </div>
         </div>
 
-        <!-- Font Size Accessibility -->
-        <div class="space-y-3">
+        <div class="space-y-2">
             <h3 class="text-sm font-medium leading-none text-foreground">Tamaño de Letra (Accesibilidad)</h3>
-            <p class="text-xs text-muted-foreground">Ajusta el tamaño del texto para una lectura más cómoda.</p>
             <div class="inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
                 <button
                     v-for="sz in fontSizesList"
@@ -103,10 +94,8 @@ const fontSizesList = [
             </div>
         </div>
 
-        <!-- High Contrast Accessibility -->
-        <div class="space-y-3">
+        <div class="space-y-2">
             <h3 class="text-sm font-medium leading-none text-foreground">Alto Contraste</h3>
-            <p class="text-xs text-muted-foreground">Mejora la legibilidad activando el contraste extremo en blanco y negro.</p>
             <button
                 @click="updateContrast(contrast === 'high' ? 'normal' : 'high')"
                 :class="[

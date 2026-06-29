@@ -2,47 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Reclamo;
-use App\Models\Pedido;
 use App\Models\Bitacora;
+use App\Models\Pedido;
+use App\Models\Reclamo;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class ReclamoController extends Controller
 {
-    /**
-     * Authorize claim management actions based on permissions and roles.
-     *
-     * @param string $action
-     * @param Reclamo|null $reclamo
-     * @return void
-     */
     private function authorizeReclamoAction(string $action, ?Reclamo $reclamo = null): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(401, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'reclamos.ver',
-            'show'    => 'reclamos.ver',
-            'create'  => 'reclamos.crear',
-            'store'   => 'reclamos.crear',
-            'update'  => 'reclamos.editar',
+            'index' => 'reclamos.ver',
+            'show' => 'reclamos.ver',
+            'create' => 'reclamos.crear',
+            'store' => 'reclamos.crear',
+            'update' => 'reclamos.editar',
             'destroy' => 'reclamos.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'reclamos.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre reclamos.');
         }
 
-        // Ownership enforcement for clients
         $roleName = $user->role->nombre;
         if ($roleName === 'Cliente' && $reclamo) {
             if ($reclamo->id_cliente !== $user->id) {
@@ -51,12 +43,6 @@ class ReclamoController extends Controller
         }
     }
 
-    /**
-     * Display a listing of claims.
-     *
-     * @param Request $request
-     * @return Response
-     */
     public function index(Request $request): Response
     {
         $this->authorizeReclamoAction('index');
@@ -75,16 +61,16 @@ class ReclamoController extends Controller
         $query->when($search, function ($q, $search) {
             $q->where(function ($inner) use ($search) {
                 $inner->where('descripcion', 'like', "%{$search}%")
-                      ->orWhere('tipo_reclamo', 'like', "%{$search}%")
-                      ->orWhereHas('cliente', function ($cQuery) use ($search) {
-                          $cQuery->where('nombre', 'like', "%{$search}%")
-                                 ->orWhere('apellido', 'like', "%{$search}%");
-                      });
+                    ->orWhere('tipo_reclamo', 'like', "%{$search}%")
+                    ->orWhereHas('cliente', function ($cQuery) use ($search) {
+                        $cQuery->where('nombre', 'like', "%{$search}%")
+                            ->orWhere('apellido', 'like', "%{$search}%");
+                    });
             });
         })
-        ->when($status, function ($q, $status) {
-            $q->where('estado_reclamo', $status);
-        });
+            ->when($status, function ($q, $status) {
+                $q->where('estado_reclamo', $status);
+            });
 
         $reclamos = $query->orderBy('id', 'desc')
             ->paginate(10)
@@ -96,15 +82,10 @@ class ReclamoController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new claim.
-     *
-     * @return Response
-     */
     public function create(): Response
     {
         $this->authorizeReclamoAction('create');
@@ -119,12 +100,6 @@ class ReclamoController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created claim in storage.
-     *
-     * @param Request $request
-     * @return RedirectResponse
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeReclamoAction('store');
@@ -150,7 +125,7 @@ class ReclamoController extends Controller
                 ->where('state', 'activo')
                 ->first();
 
-            if (!$pedido) {
+            if (! $pedido) {
                 return back()->withErrors(['id_pedido' => 'El pedido seleccionado no le pertenece o no está activo.']);
             }
         }
@@ -169,7 +144,7 @@ class ReclamoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'crear_reclamo',
             'ip' => $request->ip(),
-            'recurso' => 'reclamos/' . $reclamo->id,
+            'recurso' => 'reclamos/'.$reclamo->id,
             'detalle' => json_encode([
                 'id' => $reclamo->id,
                 'tipo_reclamo' => $reclamo->tipo_reclamo,
@@ -181,12 +156,6 @@ class ReclamoController extends Controller
         return redirect()->route('reclamos.index')->with('success', 'Reclamo registrado exitosamente.');
     }
 
-    /**
-     * Display the specified claim.
-     *
-     * @param Reclamo $reclamo
-     * @return Response
-     */
     public function show(Reclamo $reclamo): Response
     {
         $this->authorizeReclamoAction('show', $reclamo);
@@ -198,13 +167,6 @@ class ReclamoController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified claim (reply and status change by staff).
-     *
-     * @param Request $request
-     * @param Reclamo $reclamo
-     * @return RedirectResponse
-     */
     public function update(Request $request, Reclamo $reclamo): RedirectResponse
     {
         $this->authorizeReclamoAction('update', $reclamo);
@@ -230,7 +192,7 @@ class ReclamoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'atender_reclamo',
             'ip' => $request->ip(),
-            'recurso' => 'reclamos/' . $reclamo->id,
+            'recurso' => 'reclamos/'.$reclamo->id,
             'detalle' => json_encode([
                 'id' => $reclamo->id,
                 'estado_reclamo' => $reclamo->estado_reclamo,
@@ -242,13 +204,6 @@ class ReclamoController extends Controller
         return redirect()->route('reclamos.show', $reclamo->id)->with('success', 'Respuesta de reclamo guardada exitosamente.');
     }
 
-    /**
-     * Remove the specified claim (logical delete).
-     *
-     * @param Request $request
-     * @param Reclamo $reclamo
-     * @return RedirectResponse
-     */
     public function destroy(Request $request, Reclamo $reclamo): RedirectResponse
     {
         $this->authorizeReclamoAction('destroy', $reclamo);
@@ -259,7 +214,7 @@ class ReclamoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_reclamo',
             'ip' => $request->ip(),
-            'recurso' => 'reclamos/' . $reclamo->id,
+            'recurso' => 'reclamos/'.$reclamo->id,
             'detalle' => json_encode([
                 'id' => $reclamo->id,
                 'state' => 'inactivo',

@@ -75,7 +75,7 @@ const submit = () => {
         <Head :title="`Despacho #${props.envio.id}`" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -95,14 +95,14 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form -->
+            
             <form @submit.prevent="submit" class="space-y-6">
-                <!-- Pedido & Distributor info (Staff editable) -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Asignación de Despacho</h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                        <!-- If Distributor, show read-only labels. If Admin/Staff, show selects. -->
+                        
                         <div class="grid gap-2">
                             <Label>Transportista Asignado</Label>
                             <div v-if="isDistributor" class="p-2.5 rounded-xl border bg-muted font-medium text-foreground">
@@ -147,7 +147,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Parameters card -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Fechas y Logística</h2>
 
@@ -202,7 +202,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Submit buttons -->
+                
                 <div class="flex items-center justify-end gap-3">
                     <Link :href="route('envios.index')">
                         <Button variant="outline" type="button" class="rounded-xl">Cancelar</Button>

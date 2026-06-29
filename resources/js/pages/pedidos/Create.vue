@@ -34,7 +34,7 @@ const props = defineProps<{
     productos: ProductType[];
 }>();
 
-// Cart local state
+
 interface CartItem {
     id_producto: number;
     producto: ProductType;
@@ -50,7 +50,7 @@ const form = useForm({
     items: [] as { id_producto: number; cantidad: number }[],
 });
 
-// Filter products based on search & category
+
 const filteredProducts = computed(() => {
     return props.productos.filter(prod => {
         const matchesSearch = prod.nombre.toLowerCase().includes(search.value.toLowerCase()) ||
@@ -63,13 +63,13 @@ const filteredProducts = computed(() => {
     });
 });
 
-// Unique categories list
+
 const categories = computed(() => {
     const cats = props.productos.map(p => p.categoria);
     return [...new Set(cats)];
 });
 
-// Calculate discounted unit price
+
 const getProductPriceDetails = (product: ProductType) => {
     const basePrice = Number(product.precio_venta);
     if (!product.ofertas || product.ofertas.length === 0) {
@@ -122,7 +122,7 @@ const removeFromCart = (id: number) => {
     cart.value = cart.value.filter(i => i.id_producto !== id);
 };
 
-// Compute cart total
+
 const cartTotal = computed(() => {
     return cart.value.reduce((sum, item) => {
         const priceDetails = getProductPriceDetails(item.producto);
@@ -138,7 +138,7 @@ const submit = () => {
     
     form.post(route('pedidos.store'), {
         onError: () => {
-            // Log or handle error
+            
         }
     });
 };
@@ -152,7 +152,7 @@ const submit = () => {
         <Head title="Realizar Pedido" />
 
         <div class="max-w-7xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -172,7 +172,7 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Validation Error Alert -->
+            
             <div v-if="form.errors.items" class="p-4 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-sm font-semibold flex items-center gap-2">
                 <AlertCircle class="h-5 w-5" />
                 {{ form.errors.items }}
@@ -183,9 +183,9 @@ const submit = () => {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Product grid (2 cols) -->
+                
                 <div class="lg:col-span-2 space-y-4">
-                    <!-- Filters bar -->
+                    
                     <div class="flex flex-col sm:flex-row gap-4 justify-between bg-card p-4 rounded-xl border border-border shadow-sm">
                         <div class="relative flex-1">
                             <Input
@@ -204,7 +204,7 @@ const submit = () => {
                         </select>
                     </div>
 
-                    <!-- Products list -->
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-if="filteredProducts.length === 0" class="col-span-full p-12 text-center text-muted-foreground border border-dashed rounded-xl bg-card">
                             No se encontraron prendas con los filtros ingresados.
@@ -215,13 +215,13 @@ const submit = () => {
                             :key="prod.id"
                             class="p-4 rounded-xl border border-border bg-card shadow-sm flex gap-4 hover:shadow-md transition-shadow"
                         >
-                            <!-- Image -->
+                            
                             <div class="h-20 w-20 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden border border-border shrink-0">
                                 <img v-if="prod.foto" :src="prod.foto" :alt="prod.nombre" class="object-cover h-full w-full" />
                                 <Shirt v-else class="h-6 w-6 text-neutral-400" />
                             </div>
 
-                            <!-- Info -->
+                            
                             <div class="flex-1 flex flex-col justify-between">
                                 <div class="space-y-0.5">
                                     <div class="flex justify-between items-baseline gap-1">
@@ -235,7 +235,7 @@ const submit = () => {
                                 </div>
                                 <div class="pt-2 border-t border-border/60 flex items-center justify-between">
                                     <div class="flex flex-col">
-                                        <!-- Price layout -->
+                                        
                                         <div v-if="getProductPriceDetails(prod).hasDiscount" class="flex flex-col">
                                             <span class="font-mono text-sm font-black text-foreground">Bs. {{ getProductPriceDetails(prod).finalPrice.toFixed(2) }}</span>
                                             <span class="text-[10px] text-muted-foreground line-through font-mono leading-none">Bs. {{ Number(prod.precio_venta).toFixed(2) }}</span>
@@ -259,7 +259,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Shopping cart sidebar -->
+                
                 <div class="space-y-6">
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6 sticky top-6">
                         <h3 class="text-md font-bold text-foreground border-b border-border pb-2 flex items-center justify-between">
@@ -269,7 +269,7 @@ const submit = () => {
                             </span>
                         </h3>
 
-                        <!-- Cart list -->
+                        
                         <div class="space-y-4 max-h-80 overflow-y-auto pr-1">
                             <div v-if="cart.length === 0" class="text-center py-16 text-xs text-muted-foreground italic">
                                 Tu carrito está vacío. Agrega pijamas del catálogo.
@@ -289,7 +289,7 @@ const submit = () => {
                                         </span>
                                     </div>
                                     
-                                    <!-- Qty Selector -->
+                                    
                                     <div class="flex items-center gap-2 mt-1">
                                         <button
                                             type="button"
@@ -325,14 +325,14 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <!-- Summary footer -->
+                        
                         <div class="pt-4 border-t border-border space-y-4">
                             <div class="flex justify-between items-baseline">
                                 <span class="text-sm font-bold text-foreground">Total del Pedido:</span>
                                 <span class="font-mono text-xl font-black text-primary">Bs. {{ cartTotal.toFixed(2) }}</span>
                             </div>
 
-                            <!-- Observations -->
+                            
                             <div class="grid gap-1.5">
                                 <Label for="observacion" class="text-xs">Observaciones / Indicaciones especiales</Label>
                                 <textarea

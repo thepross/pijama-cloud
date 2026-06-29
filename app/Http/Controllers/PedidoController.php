@@ -16,9 +16,6 @@ use Inertia\Response;
 
 class PedidoController extends Controller
 {
-    /**
-     * Authorize order management actions.
-     */
     private function authorizePedidoAction(string $action, ?Pedido $pedido = null): void
     {
         if (! Auth::check()) {
@@ -42,7 +39,6 @@ class PedidoController extends Controller
             abort(403, 'No tienes permiso para realizar esta acción sobre pedidos.');
         }
 
-        // Ownership enforcement for clients
         $roleName = $user->role->nombre;
         if ($roleName === 'Cliente' && $pedido) {
             if ($pedido->id_cliente !== $user->id) {
@@ -51,15 +47,12 @@ class PedidoController extends Controller
         }
     }
 
-    /**
-     * Display a listing of active orders.
-     */
     public function index(Request $request): Response
     {
         $this->authorizePedidoAction('index');
 
         $search = $request->input('search');
-        $status = $request->input('status'); // 'pendiente', 'confirmado', 'entregado', 'cancelado'
+        $status = $request->input('status');
 
         $roleName = Auth::user()->role->nombre;
 
@@ -67,12 +60,10 @@ class PedidoController extends Controller
             ->with(['cliente:id,nombre,apellido,email,username,ci', 'pagos'])
             ->where('state', 'activo');
 
-        // Customers can only see their own orders
         if ($roleName === 'Cliente') {
             $query->where('id_cliente', Auth::id());
         }
 
-        // Apply filters
         $query->when($search, function ($q, $search) use ($roleName) {
             $q->where(function ($sub) use ($search, $roleName) {
                 $sub->where('id', 'like', "%{$search}%")
@@ -108,14 +99,10 @@ class PedidoController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new order.
-     */
     public function create(): Response
     {
         $this->authorizePedidoAction('create');
 
-        // Fetch active products with stock
         $productos = Producto::where('state', 'activo')
             ->where('stock', '>', 0)
             ->with([
@@ -134,9 +121,6 @@ class PedidoController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created order in database.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizePedidoAction('store');
@@ -167,7 +151,6 @@ class PedidoController extends Controller
                     ->where('state', 'activo')
                     ->firstOrFail();
 
-                // 1. Check stock
                 if ($producto->stock < $item['cantidad']) {
                     DB::rollBack();
 
@@ -176,7 +159,6 @@ class PedidoController extends Controller
                     ])->withInput();
                 }
 
-                // 2. Fetch active offer
                 $offer = $producto->ofertas()
                     ->where('estado_oferta', 'activa')
                     ->where('fecha_inicio', '<=', now()->toDateString())
@@ -204,11 +186,10 @@ class PedidoController extends Controller
                     'precio_venta' => $precioVenta,
                     'descuento' => $descuento,
                     'subtotal' => $subtotal,
-                    'producto_model' => $producto, // save model reference to update stock
+                    'producto_model' => $producto,
                 ];
             }
 
-            // 3. Create the order
             $pedido = Pedido::create([
                 'id_cliente' => Auth::id(),
                 'fecha_pedido' => now()->toDateString(),
@@ -218,7 +199,6 @@ class PedidoController extends Controller
                 'state' => 'activo',
             ]);
 
-            // 4. Save details and deduct stock
             foreach ($detalles as $det) {
                 DetallePedido::create([
                     'id_pedido' => $pedido->id,
@@ -233,7 +213,6 @@ class PedidoController extends Controller
                 $det['producto_model']->decrement('stock', $det['cantidad']);
             }
 
-            // 5. Audit Log
             Bitacora::create([
                 'id_usuario' => Auth::id(),
                 'evento' => 'crear_pedido',
@@ -258,9 +237,6 @@ class PedidoController extends Controller
         }
     }
 
-    /**
-     * Display order details.
-     */
     public function show(Pedido $pedido): Response
     {
         $this->authorizePedidoAction('show', $pedido);
@@ -283,9 +259,6 @@ class PedidoController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified order's status.
-     */
     public function update(Request $request, Pedido $pedido): RedirectResponse
     {
         $this->authorizePedidoAction('update', $pedido);
@@ -296,9 +269,8 @@ class PedidoController extends Controller
 
         $roleName = Auth::user()->role->nombre;
 
-        // Custom validation based on role bounds
         if ($roleName === 'Cliente') {
-            // Customer can only cancel
+
             $request->validate([
                 'estado_pedido' => 'required|string|in:cancelado',
             ], [
@@ -309,7 +281,7 @@ class PedidoController extends Controller
                 return back()->with('error', 'Solo puedes cancelar tu pedido si se encuentra en estado "pendiente".');
             }
         } else {
-            // Staff can transition to any valid state
+
             $request->validate([
                 'estado_pedido' => 'required|string|in:pendiente,confirmado,entregado,cancelado',
                 'observacion' => 'nullable|string|max:1000',
@@ -325,15 +297,14 @@ class PedidoController extends Controller
         try {
             DB::beginTransaction();
 
-            // Stock adjustments
             if ($newStatus === 'cancelado' && $oldStatus !== 'cancelado') {
-                // Restore stock
+
                 foreach ($pedido->detalles as $detalle) {
                     $producto = $detalle->producto;
                     $producto->increment('stock', $detalle->cantidad);
                 }
             } elseif ($oldStatus === 'cancelado' && $newStatus !== 'cancelado') {
-                // Re-deduct stock and check if available
+
                 foreach ($pedido->detalles as $detalle) {
                     $producto = $detalle->producto;
                     if ($producto->stock < $detalle->cantidad) {
@@ -345,13 +316,11 @@ class PedidoController extends Controller
                 }
             }
 
-            // Update pedido
             $pedido->update([
                 'estado_pedido' => $newStatus,
                 'observacion' => $roleName !== 'Cliente' && $request->has('observacion') ? $request->observacion : $pedido->observacion,
             ]);
 
-            // Automatic shipment creation hook
             if ($newStatus === 'confirmado' && $oldStatus !== 'confirmado') {
                 $hasShipment = Envio::where('id_pedido', $pedido->id)
                     ->where('state', 'activo')
@@ -367,7 +336,6 @@ class PedidoController extends Controller
                 }
             }
 
-            // Audit Log
             $event = ($newStatus === 'cancelado') ? 'cancelar_pedido' : 'actualizar_estado_pedido';
             Bitacora::create([
                 'id_usuario' => Auth::id(),
@@ -395,9 +363,6 @@ class PedidoController extends Controller
         }
     }
 
-    /**
-     * Remove (logical delete) the specified order.
-     */
     public function destroy(Request $request, Pedido $pedido): RedirectResponse
     {
         $this->authorizePedidoAction('destroy');
@@ -409,7 +374,6 @@ class PedidoController extends Controller
         try {
             DB::beginTransaction();
 
-            // If deleting an order that is not already cancelled, we should restore stock
             if ($pedido->estado_pedido !== 'cancelado') {
                 foreach ($pedido->detalles as $detalle) {
                     $detalle->producto->increment('stock', $detalle->cantidad);
@@ -418,7 +382,6 @@ class PedidoController extends Controller
 
             $pedido->update(['state' => 'inactivo']);
 
-            // Audit Log
             Bitacora::create([
                 'id_usuario' => Auth::id(),
                 'evento' => 'eliminar_pedido',

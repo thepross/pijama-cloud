@@ -44,7 +44,7 @@ const search = ref(props.filters.search || '');
 const roleId = ref(props.filters.role_id || '');
 const userToDelete = ref<UserType | null>(null);
 
-// Trigger search/filter query on change
+
 watch([search, roleId], ([newSearch, newRole]) => {
     router.get(
         route('usuarios.index'),
@@ -73,7 +73,7 @@ const deleteUser = () => {
         <Head title="Gestión de Usuarios" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -93,7 +93,7 @@ const deleteUser = () => {
                 </div>
             </div>
 
-            <!-- Flash alerts -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <Check class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -103,7 +103,7 @@ const deleteUser = () => {
                 {{ props.flash.error }}
             </div>
 
-            <!-- Filters -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="relative w-full max-w-md">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -130,7 +130,7 @@ const deleteUser = () => {
                 </div>
             </div>
 
-            <!-- Users Table -->
+            
             <div class="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -180,7 +180,7 @@ const deleteUser = () => {
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <!-- Prevent self deletion -->
+                                        
                                         <Button
                                             v-if="$page.props.auth.permissions.includes('usuarios.eliminar') && $page.props.auth.user.id !== user.id"
                                             @click="confirmDelete(user)"
@@ -198,7 +198,7 @@ const deleteUser = () => {
                     </table>
                 </div>
 
-                <!-- Pagination footer -->
+                
                 <div v-if="props.usuarios.last_page > 1" class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">
                         Página {{ props.usuarios.current_page }} de {{ props.usuarios.last_page }}
@@ -215,7 +215,7 @@ const deleteUser = () => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+        
         <Dialog :open="!!userToDelete" @update:open="(val) => !val && (userToDelete = null)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -224,7 +224,7 @@ const deleteUser = () => {
                         ¿Desactivar Cuenta de Usuario?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>desactivación lógica</strong> de la cuenta de <strong>"{{ userToDelete?.nombre }} {{ userToDelete?.apellido }}"</strong> (@{{ userToDelete?.username }}).
+                        Esta acción desactivará la cuenta de <strong>"{{ userToDelete?.nombre }} {{ userToDelete?.apellido }}"</strong> (@{{ userToDelete?.username }}).
                         El usuario ya no podrá iniciar sesión en la plataforma.
                     </DialogDescription>
                 </DialogHeader>

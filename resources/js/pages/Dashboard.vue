@@ -17,7 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
 ];
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+
 interface StaffKpis {
     ventas_totales: number;
     total_clientes: number;
@@ -77,24 +77,24 @@ const props = defineProps<{
     role: string;
     user_name: string;
     kpis?: StaffKpis | ClienteKpis | DistribuidorKpis;
-    // Staff
+    
     ventas_diarias?: SalePoint[];
     visitas?: VisitaItem[];
-    // Cliente
+    
     recientes?: PedidoReciente[] | EnvioReciente[];
     categorias?: CategoriaItem[];
-    // Distribuidor
+    
     envios_diarios?: EnvioPoint[];
 }>();
 
-// ─── Typed accessors ──────────────────────────────────────────────────────────
+
 const staffKpis = computed(() => props.kpis as StaffKpis | undefined);
 const clienteKpis = computed(() => props.kpis as ClienteKpis | undefined);
 const distribuidorKpis = computed(() => props.kpis as DistribuidorKpis | undefined);
 const pedidosRecientes = computed(() => (props.recientes as PedidoReciente[] | undefined) ?? []);
 const enviosRecientes = computed(() => (props.recientes as EnvioReciente[] | undefined) ?? []);
 
-// ─── Chart.js Setup ──────────────────────────────────────────────────────────
+
 const salesChartCanvas = ref<HTMLCanvasElement | null>(null);
 const categoriesChartCanvas = ref<HTMLCanvasElement | null>(null);
 const deliveriesChartCanvas = ref<HTMLCanvasElement | null>(null);
@@ -357,12 +357,12 @@ watch(() => props.envios_diarios, () => {
     }
 }, { deep: true });
 
-// ─── Bar chart for visits ─────────────────────────────────────────────────────
+
 const visitaBarMax = computed(() =>
     Math.max(...(props.visitas ?? []).map((v) => v.contador), 1),
 );
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function fmt(n: number): string {
     return 'Bs. ' + Number(n).toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
@@ -385,10 +385,10 @@ const statusColor: Record<string, string> = {
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <!-- Main Layout wrapper matches all index views (space-y-6, max-w-7xl, mx-auto) -->
+        
         <div class="space-y-6 max-w-7xl mx-auto">
 
-            <!-- Branded Header Section (Matches Usuarios, Productos, Estadisticas views) -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -400,12 +400,12 @@ const statusColor: Record<string, string> = {
                 </div>
             </div>
 
-            <!-- ═══════════════════ STAFF DASHBOARD ═══════════════════ -->
+            
             <template v-if="role_type === 'staff'">
 
-                <!-- KPI Cards Grid -->
+                
                 <div class="grid grid-cols-2 gap-6 lg:grid-cols-4">
-                    <!-- Ventas totales -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform">
                         <div class="space-y-1">
                             <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Ventas Totales</span>
@@ -419,7 +419,7 @@ const statusColor: Record<string, string> = {
                         </div>
                     </div>
 
-                    <!-- Clientes -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform">
                         <div class="space-y-1">
                             <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Clientes</span>
@@ -433,7 +433,7 @@ const statusColor: Record<string, string> = {
                         </div>
                     </div>
 
-                    <!-- Bajo stock -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform">
                         <div class="space-y-1">
                             <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Bajo Stock</span>
@@ -447,7 +447,7 @@ const statusColor: Record<string, string> = {
                         </div>
                     </div>
 
-                    <!-- Reclamos activos -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform">
                         <div class="space-y-1">
                             <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Reclamos</span>
@@ -462,10 +462,10 @@ const statusColor: Record<string, string> = {
                     </div>
                 </div>
 
-                <!-- Charts Section -->
+                
                 <div class="grid gap-6 md:grid-cols-3">
 
-                    <!-- Sales Trend (Col span 2) -->
+                    
                     <Card class="md:col-span-2 shadow-sm">
                         <CardHeader>
                             <div class="flex items-center gap-2">
@@ -486,7 +486,7 @@ const statusColor: Record<string, string> = {
                         </CardContent>
                     </Card>
 
-                    <!-- Top Visited Pages Bar Chart -->
+                    
                     <Card class="shadow-sm">
                         <CardHeader>
                             <div class="flex items-center gap-2">
@@ -517,7 +517,7 @@ const statusColor: Record<string, string> = {
                     </Card>
                 </div>
 
-                <!-- Quick Actions Grid -->
+                
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <Link href="/pedidos" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 transition-transform group-hover:scale-110">
@@ -562,7 +562,7 @@ const statusColor: Record<string, string> = {
             <!-- ═══════════════════ CLIENTE DASHBOARD ═══════════════════ -->
             <template v-else-if="role_type === 'cliente'">
 
-                <!-- KPI Cards Grid -->
+                
                 <div class="grid grid-cols-2 gap-6 lg:grid-cols-4">
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform">
                         <div class="space-y-1">
@@ -617,10 +617,10 @@ const statusColor: Record<string, string> = {
                     </div>
                 </div>
 
-                <!-- Charts and Lists Row -->
+                
                 <div class="grid gap-6 md:grid-cols-3">
 
-                    <!-- Recent Orders (Col span 2) -->
+                    
                     <Card class="md:col-span-2 shadow-sm">
                         <CardHeader class="flex flex-row items-center justify-between pb-2">
                             <div class="flex items-center gap-2">
@@ -653,7 +653,7 @@ const statusColor: Record<string, string> = {
                         </CardContent>
                     </Card>
 
-                    <!-- Categories Donut Chart -->
+                    
                     <Card class="shadow-sm">
                         <CardHeader>
                             <div class="flex items-center gap-2">
@@ -671,7 +671,7 @@ const statusColor: Record<string, string> = {
                     </Card>
                 </div>
 
-                <!-- Client Quick Actions -->
+                
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
                     <Link href="/pedidos/create" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 transition-transform group-hover:scale-110">
@@ -707,7 +707,7 @@ const statusColor: Record<string, string> = {
             <!-- ═══════════════════ DISTRIBUIDOR DASHBOARD ═══════════════════ -->
             <template v-else-if="role_type === 'distribuidor'">
 
-                <!-- KPI Cards Grid -->
+                
                 <div class="grid grid-cols-2 gap-6">
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm flex items-center justify-between hover:scale-[1.01] transition-transform">
                         <div class="space-y-1">
@@ -736,10 +736,10 @@ const statusColor: Record<string, string> = {
                     </div>
                 </div>
 
-                <!-- Charts Section -->
+                
                 <div class="grid gap-6 md:grid-cols-2">
 
-                    <!-- Delivery Trend -->
+                    
                     <Card class="shadow-sm">
                         <CardHeader>
                             <div class="flex items-center gap-2">
@@ -760,7 +760,7 @@ const statusColor: Record<string, string> = {
                         </CardContent>
                     </Card>
 
-                    <!-- Recent Shipments -->
+                    
                     <Card class="shadow-sm">
                         <CardHeader class="flex flex-row items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -793,7 +793,7 @@ const statusColor: Record<string, string> = {
                     </Card>
                 </div>
 
-                <!-- Distributor Action Link -->
+                
                 <div>
                     <Link href="/envios" class="flex items-center justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <div class="flex items-center gap-3">

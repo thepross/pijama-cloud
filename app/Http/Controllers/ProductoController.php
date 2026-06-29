@@ -2,44 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Producto;
 use App\Models\Bitacora;
+use App\Models\Producto;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class ProductoController extends Controller
 {
     private function authorizeProductAction(string $action): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'productos.ver',
-            'show'    => 'productos.ver',
-            'create'  => 'productos.crear',
-            'store'   => 'productos.crear',
-            'edit'    => 'productos.editar',
-            'update'  => 'productos.editar',
+            'index' => 'productos.ver',
+            'show' => 'productos.ver',
+            'create' => 'productos.crear',
+            'store' => 'productos.crear',
+            'edit' => 'productos.editar',
+            'update' => 'productos.editar',
             'destroy' => 'productos.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'productos.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre productos.');
         }
     }
 
-    /**
-     * Display a listing of the active products.
-     */
     public function index(Request $request): Response
     {
         $this->authorizeProductAction('index');
@@ -53,15 +50,15 @@ class ProductoController extends Controller
             ->with([
                 'ofertas' => function ($query) {
                     $query->where('estado_oferta', 'activa')
-                          ->where('fecha_inicio', '<=', now())
-                          ->where('fecha_fin', '>=', now())
-                          ->where('state', 'activo');
+                        ->where('fecha_inicio', '<=', now())
+                        ->where('fecha_fin', '>=', now())
+                        ->where('state', 'activo');
                 },
                 'puntuaciones' => function ($query) {
                     $query->where('state', 'activo')
-                          ->with('cliente:id,nombre,apellido,username')
-                          ->latest();
-                }
+                        ->with('cliente:id,nombre,apellido,username')
+                        ->latest();
+                },
             ])
             ->withAvg(['puntuaciones' => function ($query) {
                 $query->where('state', 'activo');
@@ -73,9 +70,9 @@ class ProductoController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('descripcion', 'like', "%{$search}%")
-                      ->orWhere('codigo_qr', 'like', "%{$search}%")
-                      ->orWhere('marca', 'like', "%{$search}%");
+                        ->orWhere('descripcion', 'like', "%{$search}%")
+                        ->orWhere('codigo_qr', 'like', "%{$search}%")
+                        ->orWhere('marca', 'like', "%{$search}%");
                 });
             })
             ->when($category, function ($query, $category) {
@@ -97,13 +94,10 @@ class ProductoController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new product.
-     */
     public function create(): Response
     {
         $this->authorizeProductAction('create');
@@ -111,9 +105,6 @@ class ProductoController extends Controller
         return Inertia::render('productos/Create');
     }
 
-    /**
-     * Store a newly created product in database.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeProductAction('store');
@@ -132,7 +123,7 @@ class ProductoController extends Controller
             'stock' => 'required|integer|min:0',
             'stock_minimo' => 'required|integer|min:0',
             'categoria' => 'required|string|max:255',
-            'foto' => 'nullable|string|max:2048', // Image path or base64
+            'foto' => 'nullable|string|max:2048',
         ], [
             'nombre.required' => 'El nombre del producto es obligatorio.',
             'codigo_qr.unique' => 'Este código QR ya está registrado.',
@@ -148,7 +139,7 @@ class ProductoController extends Controller
             'categoria.required' => 'La categoría es obligatoria.',
         ]);
 
-        $qrCode = $request->codigo_qr ?: 'QR-' . strtoupper(uniqid());
+        $qrCode = $request->codigo_qr ?: 'QR-'.strtoupper(uniqid());
 
         $producto = Producto::create([
             'codigo_qr' => $qrCode,
@@ -168,7 +159,6 @@ class ProductoController extends Controller
             'state' => 'activo',
         ]);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'crear_producto',
@@ -186,9 +176,6 @@ class ProductoController extends Controller
         return to_route('productos.index')->with('success', 'Producto registrado exitosamente.');
     }
 
-    /**
-     * Show the form for editing the specified product.
-     */
     public function edit(Producto $producto): Response
     {
         $this->authorizeProductAction('edit');
@@ -202,9 +189,6 @@ class ProductoController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified product in database.
-     */
     public function update(Request $request, Producto $producto): RedirectResponse
     {
         $this->authorizeProductAction('update');
@@ -267,12 +251,11 @@ class ProductoController extends Controller
             'foto' => $request->foto,
         ]);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'modificar_producto',
             'ip' => $request->ip(),
-            'recurso' => 'productos/' . $producto->id,
+            'recurso' => 'productos/'.$producto->id,
             'detalle' => json_encode([
                 'id' => $producto->id,
                 'nombre' => $producto->nombre,
@@ -285,9 +268,6 @@ class ProductoController extends Controller
         return to_route('productos.index')->with('success', 'Producto actualizado exitosamente.');
     }
 
-    /**
-     * Logically delete the specified product from database.
-     */
     public function destroy(Request $request, Producto $producto): RedirectResponse
     {
         $this->authorizeProductAction('destroy');
@@ -298,12 +278,11 @@ class ProductoController extends Controller
 
         $producto->update(['state' => 'inactivo']);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_producto',
             'ip' => $request->ip(),
-            'recurso' => 'productos/' . $producto->id,
+            'recurso' => 'productos/'.$producto->id,
             'detalle' => json_encode([
                 'id' => $producto->id,
                 'nombre' => $producto->nombre,

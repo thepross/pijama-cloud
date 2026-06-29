@@ -58,8 +58,7 @@ const isStaff = computed(() => ['Administrador', 'Vendedor'].includes(userRole.v
 
 const showDeleteDialog = ref(false);
 
-// Countdown Timer & Polling logic for QR payments
-const timeLeft = ref(120); // 2 minutes in seconds
+const timeLeft = ref(120);
 let timerInterval: any = null;
 
 const formatTime = (seconds: number) => {
@@ -73,7 +72,6 @@ onMounted(() => {
         timerInterval = setInterval(() => {
             if (timeLeft.value > 0) {
                 timeLeft.value--;
-                // Query database state via Inertia reload every 5 seconds
                 if (timeLeft.value % 5 === 0) {
                     router.reload({
                         only: ['pago', 'flash'],
@@ -97,7 +95,6 @@ onUnmounted(() => {
     }
 });
 
-// Forms
 const formCallback = useForm({});
 const formManual = useForm({
     estado_pago: 'completado',
@@ -142,7 +139,6 @@ const getMethodLabel = (method: string) => {
     return map[method] || method;
 };
 
-// Simulated receipt print
 const printReceipt = () => {
     window.print();
 };
@@ -157,14 +153,13 @@ const printReceipt = () => {
         <Head :title="`Pago #${props.pago.id}`" />
 
         <div class="space-y-6 max-w-4xl mx-auto">
-            <!-- Header section -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div>
                         <h1 class="text-3xl font-bold tracking-tight text-foreground">
                             Recibo de Pago #{{ props.pago.id }}
                             <span
-                                :class="['items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-950/40 dark:text-gray-400 border border-gray-200 dark:border-gray-900/50']">
+                                class="items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-950/40 dark:text-gray-400 border border-gray-200 dark:border-gray-900/50">
                                 {{ props.pago.transaction_id || 'N/A' }}
                             </span>
                         </h1>
@@ -197,7 +192,6 @@ const printReceipt = () => {
                 </div>
             </div>
 
-            <!-- Flash messages -->
             <div v-if="props.flash?.success"
                 class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm">
                 <CheckCircle class="h-4 w-4" />
@@ -210,13 +204,9 @@ const printReceipt = () => {
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Left/Center: Receipt summary (2 cols) -->
                 <div class="md:col-span-2 space-y-6">
-
-                    <!-- Main Payment Receipt layout -->
                     <div id="receipt-card"
                         class="p-8 rounded-2xl border border-border bg-card shadow-sm space-y-6 relative overflow-hidden">
-                        <!-- Simulated Stamp for Completed Payment -->
                         <div v-if="props.pago.estado_pago === 'fallido'"
                             class="absolute right-6 top-6 border-4 border-red-500/40 text-red-500/40 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl rotate-12 scale-110 pointer-events-none select-none font-mono">
                             ANULADO
@@ -233,7 +223,6 @@ const printReceipt = () => {
                             </div>
                         </div>
 
-                        <!-- User & Order info grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                             <div class="space-y-1">
                                 <span
@@ -263,7 +252,6 @@ const printReceipt = () => {
                             </div>
                         </div>
 
-                        <!-- Payment meta specs -->
                         <div
                             class="grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs p-4 rounded-xl bg-muted/40 border border-border">
                             <div>
@@ -289,7 +277,6 @@ const printReceipt = () => {
                             </div>
                         </div>
 
-                        <!-- Observaciones -->
                         <div v-if="props.pago.observacion" class="space-y-1 pt-2">
                             <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Nota /
                                 Observación</span>
@@ -301,10 +288,7 @@ const printReceipt = () => {
                     </div>
                 </div>
 
-                <!-- Right Column: Interactive workflows based on Type & Status -->
                 <div class="space-y-6">
-
-                    <!-- QR PagoFacil Workflow -->
                     <div v-if="props.pago.tipo_pago === 'qr' && props.pago.estado_pago === 'pendiente'"
                         class="p-6 rounded-2xl border border-border bg-card shadow-sm text-center space-y-4 animate-in slide-in-from-right-2 fade-in">
                         <h3 class="text-sm font-bold text-foreground flex items-center justify-center gap-1.5">
@@ -312,7 +296,6 @@ const printReceipt = () => {
                             Pago QR PagoFacil
                         </h3>
 
-                        <!-- Real PagoFacil QR Image in Base64 -->
                         <div
                             class="h-56 w-56 mx-auto bg-muted border border-border rounded-xl flex items-center justify-center overflow-hidden p-2">
                             <img v-if="props.pago.qr_base64" :src="`data:image/png;base64,${props.pago.qr_base64}`"
@@ -323,7 +306,6 @@ const printReceipt = () => {
                             </div>
                         </div>
 
-                        <!-- Countdown Clock -->
                         <div
                             class="flex items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground">
                             <Clock class="h-4 w-4 text-primary" />
@@ -331,14 +313,12 @@ const printReceipt = () => {
                             <span class="font-mono font-bold text-foreground">{{ formatTime(timeLeft) }}</span>
                         </div>
 
-                        <!-- Simulated Scanning Loader -->
                         <div
                             class="p-3 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary flex items-center justify-center gap-2 animate-pulse">
                             <LoaderCircle class="h-4 w-4 animate-spin shrink-0" />
                             <span>Esperando confirmación de cobro...</span>
                         </div>
 
-                        <!-- Simulator Callback Button -->
                         <Button @click="triggerCallback" :disabled="formCallback.processing || timeLeft === 0"
                             class="w-full flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 shadow-sm transition-transform hover:scale-[1.02]">
                             <LoaderCircle v-if="formCallback.processing" class="h-4 w-4 animate-spin" />
@@ -347,7 +327,6 @@ const printReceipt = () => {
                         </Button>
                     </div>
 
-                    <!-- Cash (Efectivo) validation Workflow for Staff -->
                     <div v-if="props.pago.tipo_pago === 'efectivo' && props.pago.estado_pago === 'pendiente'"
                         class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 animate-in slide-in-from-right-2 fade-in">
                         <h3 class="text-sm font-bold text-foreground flex items-center gap-1.5">
@@ -355,7 +334,6 @@ const printReceipt = () => {
                             Confirmar Efectivo
                         </h3>
 
-                        <!-- Client view -->
                         <div v-if="isClient"
                             class="text-xs leading-relaxed text-muted-foreground p-4 bg-muted/40 border rounded-xl">
                             ⏳ Tu pago está registrado y pendiente de confirmación física de efectivo. Por favor, entrega
@@ -363,7 +341,6 @@ const printReceipt = () => {
                             asignado en tienda para acreditar tu abono.
                         </div>
 
-                        <!-- Staff form view -->
                         <div v-else class="space-y-4">
                             <p class="text-xs text-muted-foreground">
                                 Confirma que has recibido los <strong>Bs. {{ Number(props.pago.monto).toFixed(2)
@@ -385,7 +362,6 @@ const printReceipt = () => {
                         </div>
                     </div>
 
-                    <!-- Payment already Completed -->
                     <div v-if="props.pago.estado_pago === 'completado'"
                         class="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-center space-y-4 animate-in slide-in-from-right-2 fade-in">
                         <div
@@ -400,27 +376,17 @@ const printReceipt = () => {
                         </div>
                     </div>
 
-                    <!-- Admin Delete panel -->
-                    <!-- <div v-if="isAdmin" class="p-6 rounded-2xl border border-destructive/20 bg-destructive/5 space-y-3">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
-                            <ShieldAlert class="h-4 w-4" />
-                            Acciones de Moderación
-                        </h4>
-                        <p class="text-[11px] text-muted-foreground leading-tight">
-                            Elimina físicamente este registro de pago si existió un error administrativo. Se restaurará
-                            el saldo pendiente del pedido.
-                        </p>
-                        <Button variant="destructive" size="sm" class="w-full rounded-xl"
+                    <div v-if="isAdmin" class="pt-2">
+                        <Button variant="destructive" class="w-full rounded-xl"
                             @click="showDeleteDialog = true">
-                            Eliminar Registro
+                            Eliminar registro de pago
                         </Button>
-                    </div> -->
+                    </div>
 
                 </div>
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
         <Dialog :open="showDeleteDialog" @update:open="(val) => !val && (showDeleteDialog = false)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -429,14 +395,12 @@ const printReceipt = () => {
                         ¿Eliminar Registro de Pago?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción es permanente. Se eliminará el registro del pago y el saldo pendiente del pedido
-                        aumentará automáticamente en el sistema.
+                        Esta acción eliminará el registro del pago y el saldo pendiente del pedido aumentará automáticamente en el sistema.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="showDeleteDialog = false" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deletePaymentAdmin" class="rounded-xl">Eliminar
-                        Permanentemente</Button>
+                    <Button variant="destructive" @click="deletePaymentAdmin" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

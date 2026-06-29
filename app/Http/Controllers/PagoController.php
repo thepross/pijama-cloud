@@ -15,12 +15,9 @@ use Inertia\Response;
 
 class PagoController extends Controller
 {
-    /**
-     * Authorize payment management actions.
-     */
     private function authorizePagoAction(string $action, ?Pago $pago = null): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(401, 'No autenticado.');
         }
 
@@ -37,11 +34,10 @@ class PagoController extends Controller
 
         $perm = $mapping[$action] ?? 'pagos.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre pagos.');
         }
 
-        // Ownership enforcement for clients
         $roleName = $user->role->nombre;
         if ($roleName === 'Cliente' && $pago) {
             if ($pago->pedido && $pago->pedido->id_cliente !== $user->id) {
@@ -50,9 +46,6 @@ class PagoController extends Controller
         }
     }
 
-    /**
-     * Display a listing of payments.
-     */
     public function index(Request $request): Response
     {
         $this->authorizePagoAction('index');
@@ -100,14 +93,10 @@ class PagoController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new payment.
-     */
     public function create(Request $request): Response
     {
         $this->authorizePagoAction('create');
 
-        // Retrieve active orders that still have a pending balance
         $pedidos = Pedido::with('pagos')
             ->where('state', 'activo')
             ->when(Auth::user()->role->nombre === 'Cliente', function ($query) {
@@ -119,11 +108,9 @@ class PagoController extends Controller
                 $totalPagado = $pedido->pagos->where('estado_pago', 'completado')->sum('monto');
                 $saldoPendiente = max(0, $pedido->total - $totalPagado);
 
-                // Get installments info
                 $primerPago = $pedido->pagos->first();
                 $totalCuotasExistente = $primerPago ? $primerPago->total_cuotas : null;
 
-                // Extract cuota numbers that are completed or pending (not failed)
                 $cuotasRegistradas = $pedido->pagos
                     ->whereIn('estado_pago', ['completado', 'pendiente'])
                     ->pluck('numero_cuota')
@@ -153,9 +140,6 @@ class PagoController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created payment in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizePagoAction('store');
@@ -188,61 +172,50 @@ class PagoController extends Controller
             ->where('state', 'activo')
             ->firstOrFail();
 
-        // Verify order ownership for Clients
         if (Auth::user()->role->nombre === 'Cliente' && $pedido->id_cliente !== Auth::id()) {
             return back()->withErrors(['id_pedido' => 'El pedido seleccionado no le pertenece.']);
         }
 
-        // --- Installments / Cuotas Validation Logic ---
         $existingPayments = Pago::where('id_pedido', $pedido->id)
             ->whereIn('estado_pago', ['pendiente', 'completado'])
             ->get();
 
         if ($existingPayments->isNotEmpty()) {
-            // Not the first payment: total_cuotas must match
             $firstPayment = $existingPayments->first();
             $expectedTotalCuotas = $firstPayment->total_cuotas;
 
             if ((int) $request->total_cuotas !== (int) $expectedTotalCuotas) {
-                return back()->withErrors(['total_cuotas' => 'El total de cuotas para este pedido ya fue establecido en ' . $expectedTotalCuotas]);
+                return back()->withErrors(['total_cuotas' => 'El total de cuotas para este pedido ya fue establecido en '.$expectedTotalCuotas]);
             }
 
-            // The cuota number must not be already registered
             $registeredCuotas = $existingPayments->pluck('numero_cuota')->toArray();
             if (in_array((int) $request->numero_cuota, $registeredCuotas)) {
-                return back()->withErrors(['numero_cuota' => 'La cuota número ' . $request->numero_cuota . ' ya ha sido registrada.']);
+                return back()->withErrors(['numero_cuota' => 'La cuota número '.$request->numero_cuota.' ya ha sido registrada.']);
             }
 
-            // The cuota number must not exceed the total cuotas
             if ((int) $request->numero_cuota > (int) $expectedTotalCuotas) {
-                return back()->withErrors(['numero_cuota' => 'El número de cuota no puede ser mayor al total de cuotas (' . $expectedTotalCuotas . ').']);
+                return back()->withErrors(['numero_cuota' => 'El número de cuota no puede ser mayor al total de cuotas ('.$expectedTotalCuotas.').']);
             }
         } else {
-            // First payment: the cuota number must not exceed the total cuotas
             if ((int) $request->numero_cuota > (int) $request->total_cuotas) {
-                return back()->withErrors(['numero_cuota' => 'El número de cuota no puede ser mayor al total de cuotas (' . $request->total_cuotas . ').']);
+                return back()->withErrors(['numero_cuota' => 'El número de cuota no puede ser mayor al total de cuotas ('.$request->total_cuotas.').']);
             }
         }
 
-        // Calculate outstanding balance before this payment
         $totalPagado = Pago::where('id_pedido', $pedido->id)
             ->where('estado_pago', 'completado')
             ->sum('monto');
         $saldoPendiente = max(0, $pedido->total - $totalPagado);
 
         if (round($request->monto, 2) > round($saldoPendiente, 2)) {
-            return back()->withErrors(['monto' => 'El monto ingresado excede el saldo pendiente de $' . number_format($saldoPendiente, 2)]);
+            return back()->withErrors(['monto' => 'El monto ingresado excede el saldo pendiente de $'.number_format($saldoPendiente, 2)]);
         }
 
-        // Initial payment status
-        // - 'tarjeta': instantly 'completado' (visual-only checkout)
-        // - 'efectivo', 'qr': stays 'pendiente' until scan/callback or seller confirms
         $estadoPago = 'pendiente';
         if ($request->tipo_pago === 'tarjeta') {
             $estadoPago = 'completado';
         }
 
-        // Calculate new pending balance after this transaction (if transaction is complete)
         $newSaldoPendiente = $saldoPendiente;
         if ($estadoPago === 'completado') {
             $newSaldoPendiente = max(0, $saldoPendiente - $request->monto);
@@ -268,7 +241,7 @@ class PagoController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                Log::error("Error generating PagoFacil QR for payment #{$pago->id}: " . $e->getMessage());
+                Log::error("Error generating PagoFacil QR for payment #{$pago->id}: ".$e->getMessage());
                 $pago->delete();
 
                 return back()->withErrors(['id_pedido' => 'No se pudo conectar con PagoFacil para generar el código QR. Intente más tarde.']);
@@ -279,7 +252,7 @@ class PagoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'crear_pago',
             'ip' => $request->ip(),
-            'recurso' => 'pagos/' . $pago->id,
+            'recurso' => 'pagos/'.$pago->id,
             'detalle' => json_encode([
                 'id' => $pago->id,
                 'id_pedido' => $pago->id_pedido,
@@ -297,28 +270,21 @@ class PagoController extends Controller
         return redirect()->route('pagos.index')->with('success', 'Pago registrado exitosamente.');
     }
 
-    /**
-     * Display the specified payment.
-     */
     public function show(Pago $pago): Response
     {
         $pago->load(['pedido.cliente']);
         $this->authorizePagoAction('show', $pago);
 
-        // Auto-check status if it is a pending QR payment
         if ($pago->tipo_pago === 'qr' && $pago->estado_pago === 'pendiente') {
             app(PagoFacilService::class)->verificarYActualizarPago($pago);
             $pago->load(['pedido.cliente']);
         }
 
         return Inertia::render('pagos/Show', [
-            'pago' => $pago
+            'pago' => $pago,
         ]);
     }
 
-    /**
-     * Update the specified payment status (Manual confirmation by staff).
-     */
     public function update(Request $request, Pago $pago): RedirectResponse
     {
         $this->authorizePagoAction('update', $pago);
@@ -334,7 +300,6 @@ class PagoController extends Controller
 
         $transitionToCompleted = ($request->estado_pago === 'completado' && $pago->estado_pago !== 'completado');
 
-        // Calculate outstanding balance
         $totalPagado = Pago::where('id_pedido', $pago->id_pedido)
             ->where('estado_pago', 'completado')
             ->where('id', '!=', $pago->id)
@@ -343,7 +308,7 @@ class PagoController extends Controller
         $saldoPendiente = max(0, $pago->pedido->total - $totalPagado);
 
         if ($transitionToCompleted && round($pago->monto, 2) > round($saldoPendiente, 2)) {
-            return back()->with('error', 'No se puede completar este pago porque excede el saldo pendiente actual del pedido ($' . number_format($saldoPendiente, 2) . ').');
+            return back()->with('error', 'No se puede completar este pago porque excede el saldo pendiente actual del pedido ($'.number_format($saldoPendiente, 2).').');
         }
 
         $newSaldoPendiente = $saldoPendiente;
@@ -361,7 +326,7 @@ class PagoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'confirmar_pago',
             'ip' => $request->ip(),
-            'recurso' => 'pagos/' . $pago->id,
+            'recurso' => 'pagos/'.$pago->id,
             'detalle' => json_encode([
                 'id' => $pago->id,
                 'estado_pago' => $pago->estado_pago,
@@ -373,9 +338,6 @@ class PagoController extends Controller
         return redirect()->route('pagos.show', $pago->id)->with('success', 'Estado del pago actualizado exitosamente.');
     }
 
-    /**
-     * Simulate PagoFacil checkout callback for QR payments.
-     */
     public function simularCallback(Pago $pago): RedirectResponse
     {
         $this->authorizePagoAction('simularCallback', $pago);
@@ -388,7 +350,6 @@ class PagoController extends Controller
             return back()->with('error', 'Este pago ya ha sido completado anteriormente.');
         }
 
-        // Calculate outstanding balance
         $totalPagado = Pago::where('id_pedido', $pago->id_pedido)
             ->where('estado_pago', 'completado')
             ->where('id', '!=', $pago->id)
@@ -397,7 +358,7 @@ class PagoController extends Controller
         $saldoPendiente = max(0, $pago->pedido->total - $totalPagado);
 
         if (round($pago->monto, 2) > round($saldoPendiente, 2)) {
-            return back()->with('error', 'No se puede confirmar el pago porque excede el saldo pendiente ($' . number_format($saldoPendiente, 2) . ').');
+            return back()->with('error', 'No se puede confirmar el pago porque excede el saldo pendiente ($'.number_format($saldoPendiente, 2).').');
         }
 
         $newSaldoPendiente = max(0, $saldoPendiente - $pago->monto);
@@ -411,7 +372,7 @@ class PagoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'callback_pagofacil',
             'ip' => request()->ip(),
-            'recurso' => 'pagos/' . $pago->id,
+            'recurso' => 'pagos/'.$pago->id,
             'detalle' => json_encode([
                 'id' => $pago->id,
                 'gateway' => 'pagofacil',
@@ -424,9 +385,6 @@ class PagoController extends Controller
         return redirect()->route('pagos.show', $pago->id)->with('success', '¡Simulación exitosa! PagoFacil ha reportado el pago como completado.');
     }
 
-    /**
-     * Remove the specified payment.
-     */
     public function destroy(Request $request, Pago $pago): RedirectResponse
     {
         $this->authorizePagoAction('destroy', $pago);
@@ -438,7 +396,7 @@ class PagoController extends Controller
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_pago',
             'ip' => $request->ip(),
-            'recurso' => 'pagos/' . $id,
+            'recurso' => 'pagos/'.$id,
             'detalle' => json_encode([
                 'id' => $id,
                 'eliminado' => true,

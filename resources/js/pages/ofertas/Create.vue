@@ -31,13 +31,13 @@ const form = useForm({
     estado_oferta: 'activa',
 });
 
-// Find selected product to display its original price in the UI
+
 const selectedProduct = computed(() => {
     if (!form.id_producto) return null;
     return props.productos.find(p => p.id === Number(form.id_producto)) || null;
 });
 
-// Calculate tentative final price in the UI
+
 const tentativeFinalPrice = computed(() => {
     if (!selectedProduct.value) return null;
     const basePrice = Number(selectedProduct.value.precio_venta);
@@ -52,7 +52,7 @@ const tentativeFinalPrice = computed(() => {
     }
 });
 
-// Check if fixed amount exceeds sale price
+
 const isDiscountAmountTooHigh = computed(() => {
     if (!selectedProduct.value || form.tipo_descuento !== 'monto') return false;
     return Number(form.valor_descuento || 0) >= Number(selectedProduct.value.precio_venta);
@@ -71,7 +71,7 @@ const submit = () => {
         <Head title="Nueva Oferta" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -91,12 +91,12 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form -->
+            
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Form inputs card -->
+                    
                     <div class="lg:col-span-2 space-y-6">
-                        <!-- Basic details card -->
+                        
                         <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                             <h2 class="text-lg font-bold text-foreground">Detalles de la Oferta</h2>
 
@@ -135,7 +135,7 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <!-- Configuration card -->
+                        
                         <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                             <h2 class="text-lg font-bold text-foreground">Regla de Descuento y Fechas</h2>
 
@@ -203,7 +203,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <!-- Sidebar Preview Card -->
+                    
                     <div class="space-y-6">
                         <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4 sticky top-6">
                             <h3 class="text-md font-bold text-foreground border-b border-border pb-2">Vista Previa del Descuento</h3>
@@ -243,7 +243,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Submit buttons -->
+                
                 <div class="flex items-center justify-end gap-3 max-w-4xl">
                     <Link :href="route('ofertas.index')">
                         <Button variant="outline" type="button" class="rounded-xl">Cancelar</Button>

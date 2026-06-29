@@ -48,7 +48,6 @@ class PagoFacilIntegrationTest extends TestCase
             'orden' => 5,
         ]);
 
-        // Sub permissions for payments
         Permiso::create([
             'nombre' => 'Ver Pagos',
             'descripcion' => 'Ver Pagos',
@@ -138,12 +137,10 @@ class PagoFacilIntegrationTest extends TestCase
             'observacion' => 'Test payment',
         ]);
 
-        // Assert redirect to show
         $pago = Pago::first();
         $this->assertNotNull($pago);
         $response->assertRedirect(route('pagos.show', $pago->id));
 
-        // Assert DB has transaction details
         $this->assertEquals('99998888', $pago->transaction_id);
         $this->assertEquals('base64encodedqrdatahere', $pago->qr_base64);
         $this->assertEquals('pendiente', $pago->estado_pago);
@@ -161,7 +158,6 @@ class PagoFacilIntegrationTest extends TestCase
 
     public function test_show_auto_checks_pago_facil_status_and_completes_payment(): void
     {
-        // Setup existing pending QR payment
         $pago = Pago::create([
             'id_pedido' => $this->order->id,
             'monto' => 100.00,
@@ -186,7 +182,7 @@ class PagoFacilIntegrationTest extends TestCase
                 'status' => 2008,
                 'values' => [
                     'companyTransactionId' => "QR-PIJ-{$pago->id}",
-                    'paymentStatus' => 3, // Completado
+                    'paymentStatus' => 3,
                     'amount' => '100.00',
                 ],
             ], 200),
@@ -195,7 +191,6 @@ class PagoFacilIntegrationTest extends TestCase
         $response = $this->actingAs($this->customerUser)->get(route('pagos.show', $pago->id));
         $response->assertStatus(200);
 
-        // Assert payment is now completed in the database
         $pago->refresh();
         $this->assertEquals('completado', $pago->estado_pago);
         $this->assertEquals(0.00, (float) $pago->saldo_pendiente);
@@ -203,7 +198,7 @@ class PagoFacilIntegrationTest extends TestCase
         Http::assertSent(function ($request) use ($pago) {
             if ($request->url() === 'https://masterqr.pagofacil.com.bo/api/services/v2/query-transaction') {
                 return $request->hasHeader('Authorization', 'Bearer fake-token') &&
-                       $request['companyTransactionId'] === "QR-PIJ-{$pago->id}";
+                       $request['pagofacilTransactionId'] === $pago->transaction_id;
             }
 
             return true;

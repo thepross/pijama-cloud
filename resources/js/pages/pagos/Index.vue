@@ -63,7 +63,7 @@ const status = ref(props.filters.status || '');
 const type = ref(props.filters.type || '');
 const paymentToDelete = ref<PaymentType | null>(null);
 
-// Apply filters
+
 let searchTimeout: any = null;
 const applyFilters = () => {
     router.get(
@@ -106,9 +106,9 @@ const getStatusBadge = (payment: PaymentType) => {
 
 const getMethodLabel = (method: string) => {
     const map: Record<string, string> = {
-        efectivo: '💵 Efectivo',
-        tarjeta: '💳 Tarjeta',
-        qr: '📱 QR PagoFacil',
+        efectivo: 'Efectivo',
+        tarjeta: 'Tarjeta',
+        qr: 'QR PagoFacil',
     };
     return map[method] || method;
 };
@@ -116,24 +116,26 @@ const getMethodLabel = (method: string) => {
 
 <template>
     <AppLayout :breadcrumbs="[{ title: 'Pagos', href: '/pagos' }]">
+
         <Head title="Gestión de Pagos" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         {{ isClient ? 'Mis Pagos y Cuotas' : 'Gestión de Pagos' }}
                     </h1>
                     <p class="text-sm text-muted-foreground mt-1">
-                        {{ isClient 
-                            ? 'Visualiza tu historial de pagos, cuotas y realiza nuevos abonos a tus pedidos.' 
+                        {{ isClient
+                            ? 'Visualiza tu historial de pagos, cuotas y realiza nuevos abonos a tus pedidos.'
                             : 'Monitorea transacciones, confirma recepciones de efectivo y concilia abonos.' }}
                     </p>
                 </div>
                 <div v-if="$page.props.auth.permissions.includes('pagos.crear')">
                     <Link :href="route('pagos.create')">
-                        <Button class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
+                        <Button
+                            class="flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition-transform rounded-xl">
                             <Plus class="h-4 w-4" />
                             Registrar Nuevo Pago
                         </Button>
@@ -141,34 +143,31 @@ const getMethodLabel = (method: string) => {
                 </div>
             </div>
 
-            <!-- Flash alerts -->
-            <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
+
+            <div v-if="props.flash?.success"
+                class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <Check class="h-4 w-4" />
                 {{ props.flash.success }}
             </div>
-            <div v-if="props.flash?.error" class="p-4 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
+            <div v-if="props.flash?.error"
+                class="p-4 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <AlertCircle class="h-4 w-4" />
                 {{ props.flash.error }}
             </div>
 
-            <!-- Filters -->
+
             <div class="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                 <div class="relative max-w-md w-full">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        v-model="search"
-                        type="text"
+                    <Input v-model="search" type="text"
                         :placeholder="isClient ? 'Buscar por ID de pago o de pedido...' : 'Buscar por ID, pedido o cliente...'"
-                        class="pl-9 h-10 w-full rounded-xl bg-card border-border shadow-sm focus-visible:ring-primary"
-                    />
+                        class="pl-9 h-10 w-full rounded-xl bg-card border-border shadow-sm focus-visible:ring-primary" />
                 </div>
                 <div class="flex flex-wrap items-center gap-4">
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-semibold text-muted-foreground shrink-0">Método:</span>
-                        <select
-                            v-model="type"
-                            class="flex h-10 w-40 rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
+                        <select v-model="type"
+                            class="flex h-10 w-40 rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                             <option value="">Todos</option>
                             <option value="efectivo">💵 Efectivo</option>
                             <option value="tarjeta">💳 Tarjeta</option>
@@ -177,10 +176,8 @@ const getMethodLabel = (method: string) => {
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-semibold text-muted-foreground shrink-0">Estado:</span>
-                        <select
-                            v-model="status"
-                            class="flex h-10 w-40 rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
+                        <select v-model="status"
+                            class="flex h-10 w-40 rounded-xl border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                             <option value="">Todos</option>
                             <option value="pendiente">Pendiente</option>
                             <option value="completado">Completado</option>
@@ -190,12 +187,13 @@ const getMethodLabel = (method: string) => {
                 </div>
             </div>
 
-            <!-- Payments Listing Table -->
+
             <div class="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-border bg-muted/40 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <tr
+                                class="border-b border-border bg-muted/40 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 <th class="p-4">Pago</th>
                                 <th class="p-4">Pedido</th>
                                 <th v-if="!isClient" class="p-4">Cliente</th>
@@ -213,17 +211,21 @@ const getMethodLabel = (method: string) => {
                                     No se encontraron registros de pagos.
                                 </td>
                             </tr>
-                            <tr v-for="payment in props.pagos.data" :key="payment.id" class="hover:bg-accent/30 transition-colors">
+                            <tr v-for="payment in props.pagos.data" :key="payment.id"
+                                class="hover:bg-accent/30 transition-colors">
                                 <td class="p-4 font-mono font-medium text-muted-foreground">#{{ payment.id }}</td>
                                 <td class="p-4">
-                                    <Link :href="route('pedidos.show', payment.id_pedido)" class="font-mono text-primary font-bold hover:underline">
+                                    <Link :href="route('pedidos.show', payment.id_pedido)"
+                                        class="font-mono text-primary font-bold hover:underline">
                                         #{{ payment.id_pedido }}
                                     </Link>
                                 </td>
                                 <td v-if="!isClient" class="p-4">
                                     <div v-if="payment.pedido?.cliente" class="flex flex-col">
-                                        <span class="font-semibold text-foreground">{{ payment.pedido.cliente.nombre }} {{ payment.pedido.cliente.apellido }}</span>
-                                        <span class="text-xs text-muted-foreground">C.I. {{ payment.pedido.cliente.ci }}</span>
+                                        <span class="font-semibold text-foreground">{{ payment.pedido.cliente.nombre }}
+                                            {{ payment.pedido.cliente.apellido }}</span>
+                                        <span class="text-xs text-muted-foreground">C.I. {{ payment.pedido.cliente.ci
+                                            }}</span>
                                     </div>
                                     <span v-else class="text-xs text-muted-foreground italic">Sin cliente</span>
                                 </td>
@@ -240,25 +242,23 @@ const getMethodLabel = (method: string) => {
                                 </td>
                                 <td class="p-4 text-muted-foreground">{{ payment.fecha_pago }}</td>
                                 <td class="p-4">
-                                    <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold', getStatusBadge(payment).class]">
+                                    <span
+                                        :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold', getStatusBadge(payment).class]">
                                         {{ getStatusBadge(payment).label }}
                                     </span>
                                 </td>
                                 <td class="p-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <Link :href="route('pagos.show', payment.id)">
-                                            <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg" title="Ver detalles y comprobante">
+                                            <Button variant="outline" size="sm" class="h-8 px-2 rounded-lg"
+                                                title="Ver detalles y comprobante">
                                                 <Eye class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button
-                                            v-if="$page.props.auth.permissions.includes('pagos.eliminar')"
-                                            @click="confirmDelete(payment)"
-                                            variant="ghost"
-                                            size="sm"
+                                        <Button v-if="$page.props.auth.permissions.includes('pagos.eliminar')"
+                                            @click="confirmDelete(payment)" variant="ghost" size="sm"
                                             class="h-8 px-2 rounded-lg text-destructive hover:bg-destructive/10"
-                                            title="Eliminar registro"
-                                        >
+                                            title="Eliminar registro">
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -268,8 +268,9 @@ const getMethodLabel = (method: string) => {
                     </table>
                 </div>
 
-                <!-- Pagination footer -->
-                <div v-if="props.pagos.last_page > 1" class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
+
+                <div v-if="props.pagos.last_page > 1"
+                    class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">
                         Página {{ props.pagos.current_page }} de {{ props.pagos.last_page }}
                     </span>
@@ -285,7 +286,7 @@ const getMethodLabel = (method: string) => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+
         <Dialog :open="!!paymentToDelete" @update:open="(val) => !val && (paymentToDelete = null)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -294,12 +295,14 @@ const getMethodLabel = (method: string) => {
                         ¿Eliminar Registro de Pago?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación física</strong> de la transacción <strong>#{{ paymentToDelete?.id }}</strong>. El saldo pendiente del pedido volverá a ajustarse en el sistema.
+                        Esta acción realizará la <strong>eliminación</strong> de la transacción <strong>#{{
+                            paymentToDelete?.id }}</strong>. El saldo pendiente del pedido volverá a ajustarse en el
+                        sistema.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="paymentToDelete = null" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deletePayment" class="rounded-xl">Eliminar Permanentemente</Button>
+                    <Button variant="destructive" @click="deletePayment" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

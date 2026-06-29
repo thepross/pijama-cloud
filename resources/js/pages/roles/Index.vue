@@ -33,7 +33,7 @@ const props = defineProps<{
 const search = ref(props.filters.search || '');
 const roleToDelete = ref<RoleType | null>(null);
 
-// Watch search field to query DB with debounce/throttle
+
 let searchTimeout: any = null;
 watch(search, (value) => {
     clearTimeout(searchTimeout);
@@ -66,7 +66,7 @@ const deleteRole = () => {
         <Head title="Gestión de Roles" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -86,7 +86,7 @@ const deleteRole = () => {
                 </div>
             </div>
 
-            <!-- Flash alerts -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <Check class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -96,7 +96,7 @@ const deleteRole = () => {
                 {{ props.flash.error }}
             </div>
 
-            <!-- Filters -->
+            
             <div class="flex items-center max-w-md">
                 <div class="relative w-full">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -109,7 +109,7 @@ const deleteRole = () => {
                 </div>
             </div>
 
-            <!-- Roles Table -->
+            
             <div class="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -144,7 +144,7 @@ const deleteRole = () => {
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <!-- Disable delete for essential roles -->
+                                        
                                         <Button
                                             v-if="$page.props.auth.permissions.includes('roles.eliminar') && !['Administrador', 'Cliente'].includes(role.nombre)"
                                             @click="confirmDelete(role)"
@@ -162,7 +162,7 @@ const deleteRole = () => {
                     </table>
                 </div>
 
-                <!-- Pagination footer -->
+                
                 <div v-if="props.roles.last_page > 1" class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">
                         Página {{ props.roles.current_page }} de {{ props.roles.last_page }}
@@ -179,7 +179,7 @@ const deleteRole = () => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+        
         <Dialog :open="!!roleToDelete" @update:open="(val) => !val && (roleToDelete = null)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -188,12 +188,12 @@ const deleteRole = () => {
                         ¿Eliminar Rol?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación lógica</strong> del rol <strong>"{{ roleToDelete?.nombre }}"</strong>. El rol se marcará como inactivo y ya no podrá asignarse a nuevos usuarios.
+                        Esta acción realizará la <strong>eliminación</strong> del rol <strong>"{{ roleToDelete?.nombre }}"</strong>. El rol se marcará como inactivo y ya no podrá asignarse a nuevos usuarios.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="roleToDelete = null" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deleteRole" class="rounded-xl">Eliminar Lógicamente</Button>
+                    <Button variant="destructive" @click="deleteRole" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

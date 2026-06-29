@@ -109,7 +109,7 @@ const getStatusBadge = (status: string) => {
         <Head :title="`Reclamo #${props.reclamo.id}`" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div>
@@ -137,7 +137,7 @@ const getStatusBadge = (status: string) => {
                 </div>
             </div>
 
-            <!-- Flash messages -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm">
                 <CheckCircle class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -148,10 +148,10 @@ const getStatusBadge = (status: string) => {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left side: Claim detail and linked order (2 cols) -->
+                
                 <div class="lg:col-span-2 space-y-6">
                     
-                    <!-- Claim Detail Card -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                         <h2 class="text-lg font-bold text-foreground flex items-center gap-2">
                             <FileText class="h-5 w-5 text-primary" />
@@ -183,7 +183,7 @@ const getStatusBadge = (status: string) => {
                         </div>
                     </div>
 
-                    <!-- Linked Order Card (If associated) -->
+                    
                     <div v-if="props.reclamo.pedido" class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                         <div class="flex items-center justify-between">
                             <h2 class="text-lg font-bold text-foreground flex items-center gap-2">
@@ -210,7 +210,7 @@ const getStatusBadge = (status: string) => {
                             </div>
                         </div>
 
-                        <!-- Order items preview -->
+                        
                         <div class="space-y-3">
                             <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Productos en el pedido</span>
                             <div class="divide-y divide-border border rounded-xl overflow-hidden bg-card">
@@ -239,17 +239,17 @@ const getStatusBadge = (status: string) => {
                     </div>
                 </div>
 
-                <!-- Right side: Response and status management (1 col) -->
+                
                 <div class="space-y-6">
                     
-                    <!-- Response / Status Box -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                         <h2 class="text-lg font-bold text-foreground flex items-center gap-2">
                             <CheckCircle class="h-5 w-5 text-primary" />
                             Resolución y Respuesta
                         </h2>
 
-                        <!-- Staff Form -->
+                        
                         <form v-if="isStaff" @submit.prevent="submitUpdate" class="space-y-4 pt-2">
                             <div class="space-y-2">
                                 <Label for="estado_reclamo" class="text-sm font-semibold text-foreground">
@@ -296,7 +296,7 @@ const getStatusBadge = (status: string) => {
                             </Button>
                         </form>
 
-                        <!-- Client Read-Only Mode -->
+                        
                         <div v-else class="space-y-4 pt-2">
                             <div class="space-y-1">
                                 <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Estado actual</span>
@@ -325,14 +325,14 @@ const getStatusBadge = (status: string) => {
                         </div>
                     </div>
 
-                    <!-- Admin Delete Action Box -->
+                    
                     <div v-if="isAdmin" class="p-6 rounded-xl border border-destructive/20 bg-destructive/5 shadow-sm space-y-4">
                         <h2 class="text-lg font-bold text-destructive flex items-center gap-2">
                             <ShieldAlert class="h-5 w-5" />
                             Acciones de Moderación
                         </h2>
                         <p class="text-xs text-muted-foreground">
-                            Los administradores pueden eliminar lógicamente este reclamo del sistema si infringe normas o fue duplicado.
+                            Los administradores pueden eliminar este reclamo del sistema si infringe normas o fue duplicado.
                         </p>
                         <Button 
                             variant="destructive" 
@@ -348,7 +348,7 @@ const getStatusBadge = (status: string) => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+        
         <Dialog :open="showDeleteDialog" @update:open="(val) => !val && (showDeleteDialog = false)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -357,12 +357,12 @@ const getStatusBadge = (status: string) => {
                         ¿Eliminar Reclamo?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación lógica</strong> del reclamo <strong>#{{ props.reclamo.id }}</strong>. Dejará de visualizarse en la lista general de reclamos activos.
+                        Esta acción realizará la <strong>eliminación</strong> del reclamo <strong>#{{ props.reclamo.id }}</strong>. Dejará de visualizarse en la lista general de reclamos activos.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="showDeleteDialog = false" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deleteClaimAdmin" class="rounded-xl">Eliminar Lógicamente</Button>
+                    <Button variant="destructive" @click="deleteClaimAdmin" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

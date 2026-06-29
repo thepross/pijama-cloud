@@ -48,7 +48,7 @@ const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
 const offerToDelete = ref<OfferType | null>(null);
 
-// Apply filters on change
+
 let searchTimeout: any = null;
 const applyFilters = () => {
     router.get(
@@ -116,7 +116,7 @@ const calculateFinalPrice = (offer: OfferType) => {
         <Head title="Gestión de Ofertas" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -136,7 +136,7 @@ const calculateFinalPrice = (offer: OfferType) => {
                 </div>
             </div>
 
-            <!-- Flash alerts -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <Check class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -146,7 +146,7 @@ const calculateFinalPrice = (offer: OfferType) => {
                 {{ props.flash.error }}
             </div>
 
-            <!-- Filters -->
+            
             <div class="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                 <div class="relative max-w-md w-full">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -172,7 +172,7 @@ const calculateFinalPrice = (offer: OfferType) => {
                 </div>
             </div>
 
-            <!-- Offers Table -->
+            
             <div class="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -258,7 +258,7 @@ const calculateFinalPrice = (offer: OfferType) => {
                     </table>
                 </div>
 
-                <!-- Pagination footer -->
+                
                 <div v-if="props.ofertas.last_page > 1" class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">
                         Página {{ props.ofertas.current_page }} de {{ props.ofertas.last_page }}
@@ -275,7 +275,7 @@ const calculateFinalPrice = (offer: OfferType) => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+        
         <Dialog :open="!!offerToDelete" @update:open="(val) => !val && (offerToDelete = null)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -284,12 +284,12 @@ const calculateFinalPrice = (offer: OfferType) => {
                         ¿Eliminar Oferta?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación lógica</strong> de la oferta <strong>"{{ offerToDelete?.nombre }}"</strong>. El descuento dejará de aplicarse inmediatamente al producto.
+                        Esta acción realizará la <strong>eliminación</strong> de la oferta <strong>"{{ offerToDelete?.nombre }}"</strong>. El descuento dejará de aplicarse inmediatamente al producto.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="offerToDelete = null" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deleteOffer" class="rounded-xl">Eliminar Lógicamente</Button>
+                    <Button variant="destructive" @click="deleteOffer" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

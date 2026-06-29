@@ -2,45 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
-use App\Models\Permiso;
 use App\Models\Bitacora;
+use App\Models\Permiso;
+use App\Models\Role;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class RoleController extends Controller
 {
     private function authorizeRoleAction(string $action): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'roles.ver',
-            'show'    => 'roles.ver',
-            'create'  => 'roles.crear',
-            'store'   => 'roles.crear',
-            'edit'    => 'roles.editar',
-            'update'  => 'roles.editar',
+            'index' => 'roles.ver',
+            'show' => 'roles.ver',
+            'create' => 'roles.crear',
+            'store' => 'roles.crear',
+            'edit' => 'roles.editar',
+            'update' => 'roles.editar',
             'destroy' => 'roles.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'roles.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre roles.');
         }
     }
 
-    /**
-     * Display a listing of active roles.
-     */
     public function index(Request $request): Response
     {
         $this->authorizeRoleAction('index');
@@ -52,7 +49,7 @@ class RoleController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('descripcion', 'like', "%{$search}%");
+                        ->orWhere('descripcion', 'like', "%{$search}%");
                 });
             })
             ->orderBy('id', 'desc')
@@ -65,13 +62,10 @@ class RoleController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new role.
-     */
     public function create(): Response
     {
         $this->authorizeRoleAction('create');
@@ -89,9 +83,6 @@ class RoleController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created role in database.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeRoleAction('store');
@@ -116,7 +107,6 @@ class RoleController extends Controller
 
         $role->permissions()->sync($request->permissions);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'crear_rol',
@@ -133,9 +123,6 @@ class RoleController extends Controller
         return to_route('roles.index')->with('success', 'Rol creado exitosamente.');
     }
 
-    /**
-     * Show the form for editing the specified role.
-     */
     public function edit(Role $role): Response
     {
         $this->authorizeRoleAction('edit');
@@ -161,9 +148,6 @@ class RoleController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified role in database.
-     */
     public function update(Request $request, Role $role): RedirectResponse
     {
         $this->authorizeRoleAction('update');
@@ -196,12 +180,11 @@ class RoleController extends Controller
 
         $role->permissions()->sync($request->permissions);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'modificar_rol',
             'ip' => $request->ip(),
-            'recurso' => 'roles/' . $role->id,
+            'recurso' => 'roles/'.$role->id,
             'detalle' => json_encode([
                 'id' => $role->id,
                 'nombre' => $role->nombre,
@@ -213,9 +196,6 @@ class RoleController extends Controller
         return to_route('roles.index')->with('success', 'Rol actualizado exitosamente.');
     }
 
-    /**
-     * Logically delete the specified role from database.
-     */
     public function destroy(Request $request, Role $role): RedirectResponse
     {
         $this->authorizeRoleAction('destroy');
@@ -224,19 +204,17 @@ class RoleController extends Controller
             return to_route('roles.index')->with('error', 'El rol ya se encuentra inactivo.');
         }
 
-        // Avoid logically deleting essential roles like Administrador or Cliente
         if (in_array($role->nombre, ['Administrador', 'Cliente'])) {
             return to_route('roles.index')->with('error', 'No se pueden eliminar los roles esenciales del sistema.');
         }
 
         $role->update(['state' => 'inactivo']);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_rol',
             'ip' => $request->ip(),
-            'recurso' => 'roles/' . $role->id,
+            'recurso' => 'roles/'.$role->id,
             'detalle' => json_encode([
                 'id' => $role->id,
                 'nombre' => $role->nombre,

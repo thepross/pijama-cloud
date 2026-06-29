@@ -44,7 +44,7 @@ const form = useForm({
     observacion: '',
 });
 
-// Watch id_pedido selection to auto-populate delivery address
+
 watch(() => form.id_pedido, (newId) => {
     if (newId) {
         const order = props.pedidos.find(p => p.id === Number(newId));
@@ -67,7 +67,7 @@ const submit = () => {
         <Head title="Registrar Envío" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -87,9 +87,9 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form -->
+            
             <form @submit.prevent="submit" class="space-y-6">
-                <!-- Pedido & Distributor info -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Asignación de Despacho</h2>
 
@@ -140,7 +140,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Parameters card -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Fechas y Logística</h2>
 
@@ -195,7 +195,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Submit buttons -->
+                
                 <div class="flex items-center justify-end gap-3">
                     <Link :href="route('envios.index')">
                         <Button variant="outline" type="button" class="rounded-xl">Cancelar</Button>

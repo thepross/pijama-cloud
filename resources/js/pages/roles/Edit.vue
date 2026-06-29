@@ -35,13 +35,13 @@ const form = useForm({
     permissions: [...props.assignedPermissionIds],
 });
 
-// Toggle a single permission
+
 const togglePermission = (id: number, checked: boolean, parentId?: number) => {
     if (checked) {
         if (!form.permissions.includes(id)) {
             form.permissions.push(id);
         }
-        // If checking a child permission, auto-check the parent menu so it appears in sidebar navigation
+        
         if (parentId && !form.permissions.includes(parentId)) {
             form.permissions.push(parentId);
         }
@@ -51,7 +51,7 @@ const togglePermission = (id: number, checked: boolean, parentId?: number) => {
             form.permissions.splice(index, 1);
         }
         
-        // If unchecking a parent permission, also uncheck all its children
+        
         const parent = props.permissions.find(p => p.id === id);
         if (parent && parent.hijos) {
             parent.hijos.forEach(child => {
@@ -64,16 +64,16 @@ const togglePermission = (id: number, checked: boolean, parentId?: number) => {
     }
 };
 
-// Toggle all permissions under a parent module
+
 const toggleParentGroup = (parent: PermissionType) => {
     const allIds = [parent.id, ...(parent.hijos || []).map(h => h.id)];
     const allChecked = allIds.every(id => form.permissions.includes(id));
 
     if (allChecked) {
-        // Deselect all
+        
         form.permissions = form.permissions.filter(id => !allIds.includes(id));
     } else {
-        // Select all
+        
         allIds.forEach(id => {
             if (!form.permissions.includes(id)) {
                 form.permissions.push(id);
@@ -107,7 +107,7 @@ const submit = () => {
         <Head title="Editar Rol" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -127,9 +127,9 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form Card -->
+            
             <form @submit.prevent="submit" class="space-y-6">
-                <!-- General Details -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <div class="grid gap-6">
                         <div class="grid gap-2">
@@ -160,7 +160,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Access Matrix Section -->
+                
                 <div class="space-y-4">
                     <div>
                         <h2 class="text-lg font-bold text-foreground">Matriz de Accesos y Acciones (CRUD)</h2>
@@ -170,14 +170,14 @@ const submit = () => {
                         <InputError :message="form.errors.permissions" class="mt-2" />
                     </div>
 
-                    <!-- Permissions Hierarchy Cards -->
+                    
                     <div class="space-y-4">
                         <div
                             v-for="parent in props.permissions"
                             :key="parent.id"
                             class="rounded-xl border border-border bg-card shadow-sm overflow-hidden"
                         >
-                            <!-- Parent Header Block -->
+                            
                             <div class="flex items-center justify-between p-4 bg-muted/30 border-b border-border/60">
                                 <div class="flex items-start gap-3">
                                     <div class="flex items-center h-5 mt-0.5">
@@ -197,7 +197,7 @@ const submit = () => {
                                     </div>
                                 </div>
 
-                                <!-- Master Toggle for children -->
+                                
                                 <div v-if="parent.hijos && parent.hijos.length" class="flex items-center">
                                     <Button
                                         type="button"
@@ -214,7 +214,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <!-- Child Permissions Sub-Grid -->
+                            
                             <div v-if="parent.hijos && parent.hijos.length" class="p-4 bg-card grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div
                                     v-for="child in parent.hijos"
@@ -246,7 +246,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
+                
                 <div class="flex items-center justify-end gap-3">
                     <Link :href="route('roles.index')">
                         <Button variant="outline" type="button" class="rounded-xl">Cancelar</Button>

@@ -109,7 +109,7 @@ const getStatusBadge = (status: string) => {
         <Head :title="`Pedido #${props.pedido.id}`" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div>
@@ -131,7 +131,7 @@ const getStatusBadge = (status: string) => {
                 </div>
             </div>
 
-            <!-- Flash messages -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm">
                 <CheckCircle class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -142,9 +142,9 @@ const getStatusBadge = (status: string) => {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Details & Items list (2 cols) -->
+                
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- Customer card info -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                         <h2 class="text-lg font-bold text-foreground">Información del Cliente y Entrega</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -171,7 +171,7 @@ const getStatusBadge = (status: string) => {
                         </div>
                     </div>
 
-                    <!-- Items table card -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
                         <h2 class="text-lg font-bold text-foreground">Detalle de Prendas</h2>
                         <div class="overflow-x-auto">
@@ -220,9 +220,9 @@ const getStatusBadge = (status: string) => {
                     </div>
                 </div>
 
-                <!-- Actions card (1 col) -->
+                
                 <div class="space-y-6">
-                    <!-- Status display & observations -->
+                    
                     <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-5">
                         <div class="flex items-center justify-between border-b border-border/60 pb-3">
                             <span class="text-sm font-bold text-foreground">Estado del Pedido</span>
@@ -231,7 +231,7 @@ const getStatusBadge = (status: string) => {
                             </span>
                         </div>
 
-                        <!-- Observation displaying -->
+                        
                         <div class="space-y-1">
                             <span class="text-xs font-bold text-muted-foreground">Nota / Observación</span>
                             <p class="text-xs text-foreground bg-muted/40 p-3 rounded-lg border border-border/60 italic leading-relaxed">
@@ -239,7 +239,7 @@ const getStatusBadge = (status: string) => {
                             </p>
                         </div>
 
-                        <!-- Client cancellation button -->
+                        
                         <div v-if="isClient && props.pedido.estado_pedido === 'pendiente'" class="pt-2">
                             <Button
                                 @click="cancelOrderClient"
@@ -251,7 +251,7 @@ const getStatusBadge = (status: string) => {
                             </Button>
                         </div>
 
-                        <!-- Staff update panel -->
+                        
                         <form v-if="isStaff" @submit.prevent="submitUpdate" class="space-y-4 pt-2 border-t border-border/60">
                             <div class="grid gap-2">
                                 <Label for="estado_pedido">Actualizar Estado</Label>
@@ -290,7 +290,7 @@ const getStatusBadge = (status: string) => {
                             </Button>
                         </form>
 
-                        <!-- Admin logical delete -->
+                        
                         <div v-if="isAdmin" class="pt-4 border-t border-border/60">
                             <Button
                                 @click="showDeleteDialog = true"
@@ -306,7 +306,7 @@ const getStatusBadge = (status: string) => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+        
         <Dialog :open="showDeleteDialog" @update:open="(val) => !val && (showDeleteDialog = false)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -315,12 +315,12 @@ const getStatusBadge = (status: string) => {
                         ¿Eliminar Pedido?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación lógica</strong> del pedido <strong>#{{ props.pedido.id }}</strong>. El stock de los productos asociados se restaurará de forma automática en el inventario.
+                        Esta acción realizará la <strong>eliminación</strong> del pedido <strong>#{{ props.pedido.id }}</strong>. El stock de los productos asociados se restaurará de forma automática en el inventario.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="showDeleteDialog = false" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deleteOrderAdmin" class="rounded-xl">Eliminar Lógicamente</Button>
+                    <Button variant="destructive" @click="deleteOrderAdmin" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

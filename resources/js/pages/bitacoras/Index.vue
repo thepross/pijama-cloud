@@ -11,7 +11,7 @@ import {
     User, HardDrive, HelpCircle, Terminal, Activity, FileText, ArrowRight, Laptop
 } from 'lucide-vue-next';
 
-// ─── Interfaces ───────────────────────────────────────────────────────────────
+
 interface LogUser {
     id: number;
     username: string;
@@ -61,17 +61,17 @@ const props = defineProps<{
     filters: FilterType;
 }>();
 
-// ─── Reactive Filter States ───────────────────────────────────────────────────
+
 const search = ref(props.filters.search ?? '');
 const userId = ref(props.filters.user_id ?? '');
 const evento = ref(props.filters.evento ?? '');
 const fechaInicio = ref(props.filters.fecha_inicio ?? '');
 const fechaFin = ref(props.filters.fecha_fin ?? '');
 
-// Active selected log for details modal
+
 const selectedLog = ref<LogEntry | null>(null);
 
-// Apply filters function
+
 const applyFilters = () => {
     router.get(
         route('bitacoras.index'),
@@ -86,7 +86,7 @@ const applyFilters = () => {
     );
 };
 
-// Debounced watch triggers (only applying search when user presses Enter or clicks button, but selectors apply instantly)
+
 watch([userId, evento, fechaInicio, fechaFin], () => {
     applyFilters();
 });
@@ -100,7 +100,7 @@ const clearFilters = () => {
     router.get(route('bitacoras.index'), {}, { replace: true });
 };
 
-// ─── Humanizing helpers ───────────────────────────────────────────────────────
+
 function getEventBadgeColor(ev: string): string {
     const e = ev.toLowerCase();
     if (e.includes('eliminar') || e.includes('delete') || e.includes('fail') || e.includes('cancel')) {
@@ -123,7 +123,7 @@ function getEventBadgeColor(ev: string): string {
 
 function humanizeEvent(ev: string): string {
     const e = ev.toLowerCase();
-    // Replacements
+    
     if (e === 'ver_bitacora') return 'Visualizó Bitácora';
     if (e === 'ver_reportes') return 'Consultó Estadísticas';
     if (e === 'login') return 'Inicio de Sesión Exitoso';
@@ -159,7 +159,7 @@ function humanizeEvent(ev: string): string {
     if (e === 'crear_puntuacion') return 'Creó Calificación';
     if (e === 'eliminar_puntuacion') return 'Eliminó Calificación';
     
-    // Method actions
+    
     if (e === 'accion_post') return 'Creación de Registro';
     if (e === 'accion_put' || e === 'accion_patch') return 'Modificación de Registro';
     if (e === 'accion_delete') return 'Eliminación de Registro';
@@ -167,21 +167,21 @@ function humanizeEvent(ev: string): string {
     return ev.replace('_', ' ');
 }
 
-// User Agent parser helper for clean browser/OS representations
+
 function parseUserAgent(ua: string | null): string {
     if (!ua) return 'Desconocido';
     const lower = ua.toLowerCase();
     let browser = 'Explorador';
     let os = 'OS';
 
-    // Browser detection
+    
     if (lower.includes('firefox')) browser = 'Firefox';
     else if (lower.includes('chrome') && !lower.includes('chromium')) browser = 'Chrome';
     else if (lower.includes('safari') && !lower.includes('chrome')) browser = 'Safari';
     else if (lower.includes('edge') || lower.includes('edg')) browser = 'Edge';
     else if (lower.includes('opera') || lower.includes('opr')) browser = 'Opera';
 
-    // OS detection
+    
     if (lower.includes('windows')) os = 'Windows';
     else if (lower.includes('macintosh') || lower.includes('mac os')) os = 'macOS';
     else if (lower.includes('linux') && !lower.includes('android')) os = 'Linux';
@@ -191,7 +191,7 @@ function parseUserAgent(ua: string | null): string {
     return `${browser} en ${os}`;
 }
 
-// Format JSON Details helper
+
 const parsedDetails = computed(() => {
     if (!selectedLog.value || !selectedLog.value.detalle) return null;
     try {
@@ -222,7 +222,7 @@ function formatDate(d: string): string {
         <Head title="Bitácora del Sistema" />
 
         <div class="space-y-6 max-w-7xl mx-auto pb-8">
-            <!-- Header Section -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -240,9 +240,9 @@ function formatDate(d: string): string {
                 </div>
             </div>
 
-            <!-- KPIs Header Widgets -->
+            
             <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                <!-- Total entries -->
+                
                 <Card class="hover:scale-[1.01] transition-transform">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Eventos</CardTitle>
@@ -258,7 +258,7 @@ function formatDate(d: string): string {
                     </CardContent>
                 </Card>
 
-                <!-- Modification counts -->
+                
                 <Card class="hover:scale-[1.01] transition-transform">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Modificaciones</CardTitle>
@@ -274,7 +274,7 @@ function formatDate(d: string): string {
                     </CardContent>
                 </Card>
 
-                <!-- Most Active User -->
+                
                 <Card class="hover:scale-[1.01] transition-transform">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Usuario Más Activo</CardTitle>
@@ -293,7 +293,7 @@ function formatDate(d: string): string {
                     </CardContent>
                 </Card>
 
-                <!-- Most Frequent Event -->
+                
                 <Card class="hover:scale-[1.01] transition-transform">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Evento Frecuente</CardTitle>
@@ -313,7 +313,7 @@ function formatDate(d: string): string {
                 </Card>
             </div>
 
-            <!-- Filters Grid -->
+            
             <div class="p-5 rounded-xl border border-border bg-card shadow-sm space-y-4">
                 <div class="flex items-center gap-2 border-b border-border/60 pb-2">
                     <Filter class="h-4 w-4 text-primary" />
@@ -321,7 +321,7 @@ function formatDate(d: string): string {
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <!-- Text Search -->
+                    
                     <div class="md:col-span-2 space-y-1.5">
                         <label for="search-input" class="text-xs font-bold text-muted-foreground">Búsqueda general</label>
                         <div class="relative">
@@ -337,7 +337,7 @@ function formatDate(d: string): string {
                         </div>
                     </div>
 
-                    <!-- User Filter -->
+                    
                     <div class="space-y-1.5">
                         <label for="user-filter" class="text-xs font-bold text-muted-foreground">Usuario</label>
                         <select
@@ -352,7 +352,7 @@ function formatDate(d: string): string {
                         </select>
                     </div>
 
-                    <!-- Event Filter -->
+                    
                     <div class="space-y-1.5">
                         <label for="event-filter" class="text-xs font-bold text-muted-foreground">Tipo de Evento</label>
                         <select
@@ -367,7 +367,7 @@ function formatDate(d: string): string {
                         </select>
                     </div>
 
-                    <!-- Apply button wrapper -->
+                    
                     <div class="flex items-end">
                         <Button @click="applyFilters" class="w-full h-10 rounded-xl font-bold shadow-sm">
                             Buscar
@@ -375,7 +375,7 @@ function formatDate(d: string): string {
                     </div>
                 </div>
 
-                <!-- Date Range Filters -->
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/40 pt-4">
                     <div class="space-y-1.5">
                         <label for="date-start" class="text-xs font-bold text-muted-foreground flex items-center gap-1">
@@ -404,7 +404,7 @@ function formatDate(d: string): string {
                 </div>
             </div>
 
-            <!-- Logs Table Card -->
+            
             <div class="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -426,15 +426,15 @@ function formatDate(d: string): string {
                                 </td>
                             </tr>
                             <tr v-for="log in props.logs.data" :key="log.id" class="hover:bg-muted/10 transition-colors">
-                                <!-- ID -->
+                                
                                 <td class="p-4 font-mono font-bold text-muted-foreground text-xs">
                                     #{{ log.id }}
                                 </td>
-                                <!-- Date -->
+                                
                                 <td class="p-4 whitespace-nowrap text-xs text-foreground font-medium">
                                     {{ formatDate(log.created_at) }}
                                 </td>
-                                <!-- User -->
+                                
                                 <td class="p-4 whitespace-nowrap">
                                     <div v-if="log.usuario" class="flex flex-col">
                                         <Link :href="route('usuarios.index', { search: log.usuario.username })" class="font-bold text-foreground hover:text-primary hover:underline flex items-center gap-1">
@@ -446,23 +446,23 @@ function formatDate(d: string): string {
                                     </div>
                                     <span v-else class="text-xs text-muted-foreground italic">Sistema (Invitado)</span>
                                 </td>
-                                <!-- Event -->
+                                
                                 <td class="p-4 whitespace-nowrap">
                                     <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize border', getEventBadgeColor(log.evento)]">
                                         {{ humanizeEvent(log.evento) }}
                                     </span>
                                 </td>
-                                <!-- Resource -->
+                                
                                 <td class="p-4">
                                     <span class="text-xs font-mono bg-muted/60 text-muted-foreground px-2 py-1 rounded border border-border/40 truncate max-w-xs inline-block" :title="log.recurso">
                                         {{ log.recurso || '-' }}
                                     </span>
                                 </td>
-                                <!-- IP -->
+                                
                                 <td class="p-4 font-mono text-xs text-muted-foreground">
                                     {{ log.ip || '-' }}
                                 </td>
-                                <!-- Details Trigger -->
+                                
                                 <td class="p-4 text-right">
                                     <Button
                                         @click="selectedLog = log"
@@ -479,7 +479,7 @@ function formatDate(d: string): string {
                     </table>
                 </div>
 
-                <!-- Pagination footer -->
+                
                 <div v-if="props.logs.last_page > 1" class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground font-mono">
                         Página {{ props.logs.current_page }} de {{ props.logs.last_page }}
@@ -496,7 +496,7 @@ function formatDate(d: string): string {
             </div>
         </div>
 
-        <!-- Detail Modal Dialog -->
+        
         <Dialog :open="!!selectedLog" @update:open="(val) => !val && (selectedLog = null)">
             <DialogContent class="sm:max-w-2xl">
                 <DialogHeader>
@@ -510,7 +510,7 @@ function formatDate(d: string): string {
                 </DialogHeader>
 
                 <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                    <!-- General Details Grid -->
+                    
                     <div class="grid grid-cols-2 gap-4 bg-muted/30 p-4 rounded-xl border border-border/40 text-xs">
                         <div class="space-y-1">
                             <span class="text-muted-foreground font-bold uppercase tracking-wider block">Fecha de Registro</span>
@@ -534,7 +534,7 @@ function formatDate(d: string): string {
                         </div>
                     </div>
 
-                    <!-- Actor Profile -->
+                    
                     <div class="p-4 border border-border bg-card rounded-xl">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
                             <User class="h-3.5 w-3.5 text-primary" />
@@ -560,7 +560,7 @@ function formatDate(d: string): string {
                         </div>
                     </div>
 
-                    <!-- Client User Agent -->
+                    
                     <div class="p-4 border border-border bg-card rounded-xl text-xs space-y-2">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                             <HardDrive class="h-3.5 w-3.5 text-primary" />
@@ -575,14 +575,14 @@ function formatDate(d: string): string {
                         </p>
                     </div>
 
-                    <!-- JSON / Payload Details -->
+                    
                     <div class="p-4 border border-border bg-card rounded-xl space-y-3">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                             <FileText class="h-3.5 w-3.5 text-primary" />
                             Carga de Datos / Detalle Técnico
                         </h4>
 
-                        <!-- Formatted Key Value Grid if Detail is JSON -->
+                        
                         <div v-if="parsedDetails" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                             <div
                                 v-for="(val, key) in parsedDetails"
@@ -596,7 +596,7 @@ function formatDate(d: string): string {
                             </div>
                         </div>
 
-                        <!-- Fallback to raw text -->
+                        
                         <div v-else class="font-mono text-xs select-all text-muted-foreground bg-muted/40 p-3 rounded border border-border/30 break-all whitespace-pre-wrap max-h-48 overflow-y-auto">
                             {{ selectedLog?.detalle || 'Sin parámetros de detalle registrados.' }}
                         </div>

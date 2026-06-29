@@ -2,51 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bitacora;
 use App\Models\Oferta;
 use App\Models\Producto;
-use App\Models\Bitacora;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class OfertaController extends Controller
 {
     private function authorizeOfferAction(string $action): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'ofertas.ver',
-            'show'    => 'ofertas.ver',
-            'create'  => 'ofertas.crear',
-            'store'   => 'ofertas.crear',
-            'edit'    => 'ofertas.editar',
-            'update'  => 'ofertas.editar',
+            'index' => 'ofertas.ver',
+            'show' => 'ofertas.ver',
+            'create' => 'ofertas.crear',
+            'store' => 'ofertas.crear',
+            'edit' => 'ofertas.editar',
+            'update' => 'ofertas.editar',
             'destroy' => 'ofertas.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'ofertas.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre ofertas.');
         }
     }
 
-    /**
-     * Display a listing of the active offers.
-     */
     public function index(Request $request): Response
     {
         $this->authorizeOfferAction('index');
 
         $search = $request->input('search');
-        $status = $request->input('status'); // 'activa', 'inactiva', 'vencida', 'programada'
+        $status = $request->input('status');
 
         $ofertas = Oferta::query()
             ->with('producto:id,nombre,codigo_qr,precio_venta,foto')
@@ -54,27 +50,27 @@ class OfertaController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nombre', 'like', "%{$search}%")
-                      ->orWhere('descripcion', 'like', "%{$search}%")
-                      ->orWhereHas('producto', function ($prodQuery) use ($search) {
-                          $prodQuery->where('nombre', 'like', "%{$search}%")
-                                    ->orWhere('codigo_qr', 'like', "%{$search}%");
-                      });
+                        ->orWhere('descripcion', 'like', "%{$search}%")
+                        ->orWhereHas('producto', function ($prodQuery) use ($search) {
+                            $prodQuery->where('nombre', 'like', "%{$search}%")
+                                ->orWhere('codigo_qr', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($status, function ($query, $status) {
                 $today = now()->toDateString();
                 if ($status === 'activa') {
                     $query->where('estado_oferta', 'activa')
-                          ->where('fecha_inicio', '<=', $today)
-                          ->where('fecha_fin', '>=', $today);
+                        ->where('fecha_inicio', '<=', $today)
+                        ->where('fecha_fin', '>=', $today);
                 } elseif ($status === 'inactiva') {
                     $query->where('estado_oferta', 'inactiva');
                 } elseif ($status === 'vencida') {
                     $query->where('estado_oferta', 'activa')
-                          ->where('fecha_fin', '<', $today);
+                        ->where('fecha_fin', '<', $today);
                 } elseif ($status === 'programada') {
                     $query->where('estado_oferta', 'activa')
-                          ->where('fecha_inicio', '>', $today);
+                        ->where('fecha_inicio', '>', $today);
                 }
             })
             ->orderBy('id', 'desc')
@@ -87,13 +83,10 @@ class OfertaController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new offer.
-     */
     public function create(): Response
     {
         $this->authorizeOfferAction('create');
@@ -107,9 +100,6 @@ class OfertaController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created offer in database.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeOfferAction('store');
@@ -143,14 +133,13 @@ class OfertaController extends Controller
 
         $producto = Producto::findOrFail($request->id_producto);
 
-        // Business Rule validation checks
         if ($request->tipo_descuento === 'porcentaje') {
             if ($request->valor_descuento > 100) {
                 return back()->withErrors(['valor_descuento' => 'El valor de descuento por porcentaje no puede ser mayor a 100%.'])->withInput();
             }
         } elseif ($request->tipo_descuento === 'monto') {
             if ($request->valor_descuento >= $producto->precio_venta) {
-                return back()->withErrors(['valor_descuento' => 'El valor de descuento por monto fijo debe ser menor al precio de venta del producto ($' . $producto->precio_venta . ').'])->withInput();
+                return back()->withErrors(['valor_descuento' => 'El valor de descuento por monto fijo debe ser menor al precio de venta del producto ($'.$producto->precio_venta.').'])->withInput();
             }
         }
 
@@ -166,7 +155,6 @@ class OfertaController extends Controller
             'state' => 'activo',
         ]);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'crear_oferta',
@@ -176,7 +164,7 @@ class OfertaController extends Controller
                 'id' => $oferta->id,
                 'nombre' => $oferta->nombre,
                 'producto' => $producto->nombre,
-                'descuento' => $oferta->valor_descuento . ' (' . $oferta->tipo_descuento . ')',
+                'descuento' => $oferta->valor_descuento.' ('.$oferta->tipo_descuento.')',
             ], JSON_UNESCAPED_UNICODE),
             'user_agent' => $request->userAgent(),
         ]);
@@ -184,9 +172,6 @@ class OfertaController extends Controller
         return to_route('ofertas.index')->with('success', 'Oferta registrada exitosamente.');
     }
 
-    /**
-     * Show the form for editing the specified offer.
-     */
     public function edit(Oferta $oferta): Response
     {
         $this->authorizeOfferAction('edit');
@@ -205,9 +190,6 @@ class OfertaController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified offer in database.
-     */
     public function update(Request $request, Oferta $oferta): RedirectResponse
     {
         $this->authorizeOfferAction('update');
@@ -245,14 +227,13 @@ class OfertaController extends Controller
 
         $producto = Producto::findOrFail($request->id_producto);
 
-        // Business Rule validation checks
         if ($request->tipo_descuento === 'porcentaje') {
             if ($request->valor_descuento > 100) {
                 return back()->withErrors(['valor_descuento' => 'El valor de descuento por porcentaje no puede ser mayor a 100%.'])->withInput();
             }
         } elseif ($request->tipo_descuento === 'monto') {
             if ($request->valor_descuento >= $producto->precio_venta) {
-                return back()->withErrors(['valor_descuento' => 'El valor de descuento por monto fijo debe ser menor al precio de venta del producto ($' . $producto->precio_venta . ').'])->withInput();
+                return back()->withErrors(['valor_descuento' => 'El valor de descuento por monto fijo debe ser menor al precio de venta del producto ($'.$producto->precio_venta.').'])->withInput();
             }
         }
 
@@ -267,17 +248,16 @@ class OfertaController extends Controller
             'estado_oferta' => $request->estado_oferta,
         ]);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'editar_oferta',
             'ip' => $request->ip(),
-            'recurso' => 'ofertas/' . $oferta->id,
+            'recurso' => 'ofertas/'.$oferta->id,
             'detalle' => json_encode([
                 'id' => $oferta->id,
                 'nombre' => $oferta->nombre,
                 'producto' => $producto->nombre,
-                'descuento' => $oferta->valor_descuento . ' (' . $oferta->tipo_descuento . ')',
+                'descuento' => $oferta->valor_descuento.' ('.$oferta->tipo_descuento.')',
             ], JSON_UNESCAPED_UNICODE),
             'user_agent' => $request->userAgent(),
         ]);
@@ -285,9 +265,6 @@ class OfertaController extends Controller
         return to_route('ofertas.index')->with('success', 'Oferta actualizada exitosamente.');
     }
 
-    /**
-     * Remove the specified offer from database (logical delete).
-     */
     public function destroy(Request $request, Oferta $oferta): RedirectResponse
     {
         $this->authorizeOfferAction('destroy');
@@ -298,12 +275,11 @@ class OfertaController extends Controller
 
         $oferta->update(['state' => 'inactivo']);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_oferta',
             'ip' => $request->ip(),
-            'recurso' => 'ofertas/' . $oferta->id,
+            'recurso' => 'ofertas/'.$oferta->id,
             'detalle' => json_encode([
                 'id' => $oferta->id,
                 'nombre' => $oferta->nombre,

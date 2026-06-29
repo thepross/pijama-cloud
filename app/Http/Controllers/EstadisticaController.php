@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bitacora;
+use App\Models\DetallePedido;
 use App\Models\Pedido;
 use App\Models\Producto;
 use App\Models\Reclamo;
-use App\Models\Bitacora;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -13,19 +14,12 @@ use Inertia\Response;
 
 class EstadisticaController extends Controller
 {
-    /**
-     * Display a statistics dashboard and summary reports.
-     *
-     * @param Request $request
-     * @return Response
-     */
     public function index(Request $request): Response
     {
-        if (!Auth::user()->role->hasPermission('estadisticas.ver')) {
+        if (! Auth::user()->role->hasPermission('estadisticas.ver')) {
             abort(403, 'No tienes permiso para acceder a estadísticas.');
         }
 
-        // 2. Validate input filters in Spanish
         $request->validate([
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
@@ -38,7 +32,6 @@ class EstadisticaController extends Controller
         $fechaInicio = $request->input('fecha_inicio', now()->subDays(30)->toDateString());
         $fechaFin = $request->input('fecha_fin', now()->toDateString());
 
-        // 3. Compute KPI Metrics
         $ingresosTotales = (float) Pedido::where('state', 'activo')
             ->where('estado_pedido', '!=', 'cancelado')
             ->whereBetween('fecha_pedido', [$fechaInicio, $fechaFin])
@@ -56,7 +49,6 @@ class EstadisticaController extends Controller
             ->where('estado_reclamo', 'pendiente')
             ->count();
 
-        // 4. Sales Daily Trend
         $ventasDiarias = Pedido::selectRaw('fecha_pedido as date, SUM(total) as revenue, COUNT(id) as orders_count')
             ->where('state', 'activo')
             ->where('estado_pedido', '!=', 'cancelado')
@@ -72,8 +64,7 @@ class EstadisticaController extends Controller
                 ];
             });
 
-        // 5. Best Selling Products (Top 5)
-        $mejoresProductos = \App\Models\DetallePedido::selectRaw('detalle_pedido.id_producto, SUM(detalle_pedido.cantidad) as total_vendido, SUM(detalle_pedido.subtotal) as total_recaudado')
+        $mejoresProductos = DetallePedido::selectRaw('detalle_pedido.id_producto, SUM(detalle_pedido.cantidad) as total_vendido, SUM(detalle_pedido.subtotal) as total_recaudado')
             ->join('pedidos', 'detalle_pedido.id_pedido', '=', 'pedidos.id')
             ->join('productos', 'detalle_pedido.id_producto', '=', 'productos.id')
             ->where('pedidos.state', 'activo')
@@ -96,8 +87,7 @@ class EstadisticaController extends Controller
                 ];
             });
 
-        // 6. Sales by Category
-        $ventasCategorias = \App\Models\DetallePedido::selectRaw('productos.categoria, SUM(detalle_pedido.subtotal) as total_ventas')
+        $ventasCategorias = DetallePedido::selectRaw('productos.categoria, SUM(detalle_pedido.subtotal) as total_ventas')
             ->join('pedidos', 'detalle_pedido.id_pedido', '=', 'pedidos.id')
             ->join('productos', 'detalle_pedido.id_producto', '=', 'productos.id')
             ->where('pedidos.state', 'activo')
@@ -112,7 +102,6 @@ class EstadisticaController extends Controller
                 ];
             });
 
-        // 7. Claims Status breakdown
         $reclamosEstados = Reclamo::selectRaw('estado_reclamo, COUNT(id) as count')
             ->where('state', 'activo')
             ->groupBy('estado_reclamo')
@@ -127,7 +116,6 @@ class EstadisticaController extends Controller
             'rechazado' => $reclamosEstados['rechazado'] ?? 0,
         ];
 
-        // 8. Register Audit Trail Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'ver_reportes',

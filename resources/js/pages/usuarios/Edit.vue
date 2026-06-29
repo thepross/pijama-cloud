@@ -55,7 +55,7 @@ const submit = () => {
         <Head title="Editar Usuario" />
 
         <div class="max-w-4xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -75,9 +75,9 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form -->
+            
             <form @submit.prevent="submit" class="space-y-6">
-                <!-- General Info Card -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Información Personal y de Contacto</h2>
 
@@ -116,7 +116,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Account Credentials Card -->
+                
                 <div class="p-6 rounded-xl border border-border bg-card shadow-sm space-y-6">
                     <h2 class="text-lg font-bold text-foreground">Credenciales e Identificación de Cuenta</h2>
 
@@ -152,7 +152,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <!-- Password fields (optional) -->
+                    
                     <div class="p-4 rounded-xl border border-dashed border-border bg-muted/20 space-y-4">
                         <div>
                             <h3 class="text-sm font-semibold text-foreground">Cambiar Contraseña (Opcional)</h3>
@@ -175,7 +175,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <!-- Submit buttons -->
+                
                 <div class="flex items-center justify-end gap-3">
                     <Link :href="route('usuarios.index')">
                         <Button variant="outline" type="button" class="rounded-xl">Cancelar</Button>

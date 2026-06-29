@@ -2,47 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bitacora;
 use App\Models\Envio;
 use App\Models\Pedido;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Bitacora;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class EnvioController extends Controller
 {
-    /**
-     * Authorize shipping actions.
-     */
     private function authorizeEnvioAction(string $action, ?Envio $envio = null): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(401, 'No autenticado.');
         }
 
         $user = Auth::user();
         $mapping = [
-            'index'   => 'envios.ver',
-            'show'    => 'envios.ver',
-            'create'  => 'envios.crear',
-            'store'   => 'envios.crear',
-            'edit'    => 'envios.editar',
-            'update'  => 'envios.editar',
+            'index' => 'envios.ver',
+            'show' => 'envios.ver',
+            'create' => 'envios.crear',
+            'store' => 'envios.crear',
+            'edit' => 'envios.editar',
+            'update' => 'envios.editar',
             'destroy' => 'envios.eliminar',
         ];
 
         $perm = $mapping[$action] ?? 'envios.ver';
 
-        if (!$user->role->hasPermission($perm)) {
+        if (! $user->role->hasPermission($perm)) {
             abort(403, 'No tienes permiso para realizar esta acción sobre envíos.');
         }
 
-        // Distributor shipment assignment restriction
         $roleName = $user->role->nombre;
         if ($roleName === 'Distribuidor' && $envio) {
             if ($envio->id_distribuidor !== $user->id) {
@@ -51,15 +47,12 @@ class EnvioController extends Controller
         }
     }
 
-    /**
-     * Display a listing of dispatches.
-     */
     public function index(Request $request): Response
     {
         $this->authorizeEnvioAction('index');
 
         $search = $request->input('search');
-        $status = $request->input('status'); // 'pendiente', 'en_camino', 'entregado', 'fallido'
+        $status = $request->input('status');
 
         $roleName = Auth::user()->role->nombre;
 
@@ -67,12 +60,10 @@ class EnvioController extends Controller
             ->with(['pedido.cliente', 'distribuidor:id,nombre,apellido,username,email'])
             ->where('state', 'activo');
 
-        // Distributors only see their own assigned dispatches
         if ($roleName === 'Distribuidor') {
             $query->where('id_distribuidor', Auth::id());
         }
 
-        // Filters
         $query->when($search, function ($q, $search) use ($roleName) {
             $q->where(function ($sub) use ($search, $roleName) {
                 $sub->where('id', 'like', "%{$search}%")
@@ -86,11 +77,11 @@ class EnvioController extends Controller
                 if ($roleName !== 'Distribuidor') {
                     $sub->orWhereHas('distribuidor', function ($dQuery) use ($search) {
                         $dQuery->where('nombre', 'like', "%{$search}%")
-                               ->orWhere('apellido', 'like', "%{$search}%");
+                            ->orWhere('apellido', 'like', "%{$search}%");
                     })->orWhereHas('pedido.cliente', function ($cQuery) use ($search) {
                         $cQuery->where('nombre', 'like', "%{$search}%")
-                               ->orWhere('apellido', 'like', "%{$search}%")
-                               ->orWhere('ci', 'like', "%{$search}%");
+                            ->orWhere('apellido', 'like', "%{$search}%")
+                            ->orWhere('ci', 'like', "%{$search}%");
                     });
                 }
             });
@@ -110,18 +101,14 @@ class EnvioController extends Controller
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-            ]
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new shipping.
-     */
     public function create(): Response
     {
         $this->authorizeEnvioAction('create');
 
-        // Fetch active orders that don't have active shipments
         $pedidos = Pedido::where('state', 'activo')
             ->where('estado_pedido', 'confirmado')
             ->whereDoesntHave('envios', function ($query) {
@@ -131,7 +118,6 @@ class EnvioController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        // Fetch all active Distributors
         $distribuidorRole = Role::where('nombre', 'Distribuidor')->first();
         $distribuidores = $distribuidorRole
             ? User::where('id_rol', $distribuidorRole->id)->where('state', 'activo')->orderBy('nombre')->get(['id', 'nombre', 'apellido', 'username'])
@@ -143,9 +129,6 @@ class EnvioController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created shipping in database.
-     */
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeEnvioAction('store');
@@ -171,7 +154,6 @@ class EnvioController extends Controller
             'estado_envio.in' => 'El estado de envío no es válido.',
         ]);
 
-        // Check if an active shipment already exists for the order
         $exists = Envio::where('id_pedido', $request->id_pedido)
             ->where('state', 'activo')
             ->exists();
@@ -192,7 +174,6 @@ class EnvioController extends Controller
             'state' => 'activo',
         ]);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'crear_envio',
@@ -210,9 +191,6 @@ class EnvioController extends Controller
         return to_route('envios.index')->with('success', 'Envío registrado exitosamente.');
     }
 
-    /**
-     * Show the form for editing the specified shipping.
-     */
     public function edit(Envio $envio): Response
     {
         $this->authorizeEnvioAction('edit', $envio);
@@ -223,7 +201,6 @@ class EnvioController extends Controller
 
         $envio->load(['pedido.cliente', 'distribuidor:id,nombre,apellido,username']);
 
-        // Fetch all active Distributors
         $distribuidorRole = Role::where('nombre', 'Distribuidor')->first();
         $distribuidores = $distribuidorRole
             ? User::where('id_rol', $distribuidorRole->id)->where('state', 'activo')->orderBy('nombre')->get(['id', 'nombre', 'apellido', 'username'])
@@ -235,9 +212,6 @@ class EnvioController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified shipping in database.
-     */
     public function update(Request $request, Envio $envio): RedirectResponse
     {
         $this->authorizeEnvioAction('update', $envio);
@@ -248,9 +222,8 @@ class EnvioController extends Controller
 
         $roleName = Auth::user()->role->nombre;
 
-        // Custom validation based on role bounds
         if ($roleName === 'Distribuidor') {
-            // Distributors can only update dates, status, route, and observations
+
             $request->validate([
                 'fecha_salida' => 'nullable|date',
                 'fecha_entrega' => 'nullable|date|after_or_equal:fecha_salida',
@@ -267,7 +240,7 @@ class EnvioController extends Controller
 
             $data = $request->only(['fecha_salida', 'fecha_entrega', 'estado_envio', 'ruta', 'observacion']);
         } else {
-            // Staff can edit everything
+
             $request->validate([
                 'id_distribuidor' => 'nullable|exists:usuarios,id',
                 'direccion_entrega' => 'required|string|max:255',
@@ -299,18 +272,16 @@ class EnvioController extends Controller
 
             $envio->update($data);
 
-            // Sync with Pedido if state changed to 'entregado'
             if ($newStatus === 'entregado' && $oldStatus !== 'entregado') {
                 $pedido = $envio->pedido;
                 if ($pedido->estado_pedido !== 'entregado') {
                     $pedido->update(['estado_pedido' => 'entregado']);
 
-                    // Log Order update
                     Bitacora::create([
                         'id_usuario' => Auth::id(),
                         'evento' => 'actualizar_estado_pedido',
                         'ip' => $request->ip(),
-                        'recurso' => 'pedidos/' . $pedido->id,
+                        'recurso' => 'pedidos/'.$pedido->id,
                         'detalle' => json_encode([
                             'id' => $pedido->id,
                             'estado_anterior' => 'confirmado',
@@ -322,13 +293,12 @@ class EnvioController extends Controller
                 }
             }
 
-            // Log Envio update
             $event = ($oldDist != $newDist) ? 'asignar_distribuidor' : 'actualizar_estado_envio';
             Bitacora::create([
                 'id_usuario' => Auth::id(),
                 'evento' => $event,
                 'ip' => $request->ip(),
-                'recurso' => 'envios/' . $envio->id,
+                'recurso' => 'envios/'.$envio->id,
                 'detalle' => json_encode([
                     'id' => $envio->id,
                     'estado_anterior' => $oldStatus,
@@ -345,13 +315,11 @@ class EnvioController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error al actualizar el envío: ' . $e->getMessage());
+
+            return back()->with('error', 'Error al actualizar el envío: '.$e->getMessage());
         }
     }
 
-    /**
-     * Remove the specified shipping (logical delete).
-     */
     public function destroy(Request $request, Envio $envio): RedirectResponse
     {
         $this->authorizeEnvioAction('destroy');
@@ -362,12 +330,11 @@ class EnvioController extends Controller
 
         $envio->update(['state' => 'inactivo']);
 
-        // Audit Log
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'eliminar_envio',
             'ip' => $request->ip(),
-            'recurso' => 'envios/' . $envio->id,
+            'recurso' => 'envios/'.$envio->id,
             'detalle' => json_encode([
                 'id' => $envio->id,
                 'state' => 'inactivo',

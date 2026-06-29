@@ -24,13 +24,13 @@ const form = useForm({
 });
 
 const submit = () => {
-    // If id_pedido is empty string, make it null
+    
     const submitData = {
         ...form,
         id_pedido: form.id_pedido === '' ? null : form.id_pedido
     };
     
-    // We send via form.transform to ensure empty string is mapped to null
+    
     form.transform((data) => ({
         ...data,
         id_pedido: data.id_pedido === '' ? null : Number(data.id_pedido)
@@ -46,7 +46,7 @@ const submit = () => {
         <Head title="Registrar Reclamo" />
 
         <div class="max-w-3xl mx-auto space-y-6">
-            <!-- Header section -->
+            
             <div class="flex items-center gap-4">
                 <Link :href="route('reclamos.index')">
                     <Button variant="outline" size="icon" class="h-9 w-9 rounded-xl shadow-sm">
@@ -63,10 +63,10 @@ const submit = () => {
                 </div>
             </div>
 
-            <!-- Form Card -->
+            
             <div class="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                 <form @submit.prevent="submit" class="p-6 sm:p-8 space-y-6">
-                    <!-- Tipo Reclamo -->
+                    
                     <div class="space-y-2">
                         <Label for="tipo_reclamo" class="text-sm font-semibold text-foreground">
                             Tipo de Reclamo / Comentario <span class="text-destructive">*</span>
@@ -86,7 +86,7 @@ const submit = () => {
                         <InputError :message="form.errors.tipo_reclamo" />
                     </div>
 
-                    <!-- Vincular Pedido (Optional) -->
+                    
                     <div class="space-y-2">
                         <Label for="id_pedido" class="text-sm font-semibold text-foreground">
                             Vincular a un Pedido (Opcional)
@@ -111,7 +111,7 @@ const submit = () => {
                         <InputError :message="form.errors.id_pedido" />
                     </div>
 
-                    <!-- Descripción -->
+                    
                     <div class="space-y-2">
                         <Label for="descripcion" class="text-sm font-semibold text-foreground">
                             Detalles del Reclamo <span class="text-destructive">*</span>
@@ -132,7 +132,7 @@ const submit = () => {
                         <InputError :message="form.errors.descripcion" />
                     </div>
 
-                    <!-- Actions -->
+                    
                     <div class="pt-4 border-t border-border flex items-center justify-end gap-3">
                         <Link :href="route('reclamos.index')">
                             <Button variant="outline" type="button" class="rounded-xl">

@@ -62,7 +62,7 @@ const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
 const claimToDelete = ref<ClaimType | null>(null);
 
-// Apply filters
+
 let searchTimeout: any = null;
 const applyFilters = () => {
     router.get(
@@ -109,7 +109,7 @@ const getStatusBadge = (claim: ClaimType) => {
         <Head title="Gestión de Reclamos y Comentarios" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
-            <!-- Header section -->
+            
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
@@ -131,7 +131,7 @@ const getStatusBadge = (claim: ClaimType) => {
                 </div>
             </div>
 
-            <!-- Flash alerts -->
+            
             <div v-if="props.flash?.success" class="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm shadow-sm animate-in fade-in slide-in-from-top-2">
                 <Check class="h-4 w-4" />
                 {{ props.flash.success }}
@@ -141,7 +141,7 @@ const getStatusBadge = (claim: ClaimType) => {
                 {{ props.flash.error }}
             </div>
 
-            <!-- Filters -->
+            
             <div class="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                 <div class="relative max-w-md w-full">
                     <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -167,8 +167,8 @@ const getStatusBadge = (claim: ClaimType) => {
                 </div>
             </div>
 
-            <!-- Claims Listing -->
-            <!-- Client Cards Layout -->
+            
+            
             <div v-if="isClient" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-if="props.reclamos.data.length === 0" class="col-span-full p-12 text-center text-muted-foreground border border-dashed rounded-2xl bg-card">
                     Aún no has registrado ningún reclamo o comentario.
@@ -210,7 +210,7 @@ const getStatusBadge = (claim: ClaimType) => {
                 </div>
             </div>
 
-            <!-- Admin/Seller Table Layout -->
+            
             <div v-else class="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -275,7 +275,7 @@ const getStatusBadge = (claim: ClaimType) => {
                     </table>
                 </div>
 
-                <!-- Pagination footer -->
+                
                 <div v-if="props.reclamos.last_page > 1" class="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">
                         Página {{ props.reclamos.current_page }} de {{ props.reclamos.last_page }}
@@ -292,7 +292,7 @@ const getStatusBadge = (claim: ClaimType) => {
             </div>
         </div>
 
-        <!-- Delete Confirmation Dialog -->
+        
         <Dialog :open="!!claimToDelete" @update:open="(val) => !val && (claimToDelete = null)">
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
@@ -301,12 +301,12 @@ const getStatusBadge = (claim: ClaimType) => {
                         ¿Eliminar Reclamo?
                     </DialogTitle>
                     <DialogDescription>
-                        Esta acción realizará una <strong>eliminación lógica</strong> del reclamo <strong>#{{ claimToDelete?.id }}</strong>. Dejará de mostrarse en las listas públicas y de gestión.
+                        Esta acción realizará la <strong>eliminación</strong> del reclamo <strong>#{{ claimToDelete?.id }}</strong>. Dejará de mostrarse en las listas públicas y de gestión.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="gap-2 sm:gap-0">
                     <Button variant="outline" @click="claimToDelete = null" class="rounded-xl">Cancelar</Button>
-                    <Button variant="destructive" @click="deleteClaim" class="rounded-xl">Eliminar Lógicamente</Button>
+                    <Button variant="destructive" @click="deleteClaim" class="rounded-xl">Eliminar</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
