@@ -66,7 +66,7 @@ class PagoFacilService
             'amount' => (float) $pago->monto,
             'currency' => 2,
             'clientCode' => "CLI-{$pedido->id_cliente}",
-            'callbackUrl' => 'https://thepross.xyz/puente/pagofacil/callback',
+            'callbackUrl' => config('services.pagofacil.callback_url'),
             'orderDetail' => [
                 [
                     'serial' => 1,
