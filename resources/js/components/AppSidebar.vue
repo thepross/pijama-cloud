@@ -17,7 +17,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         const IconComponent = (Icons as any)[item.icono] || Icons.HelpCircle;
         return {
             title: item.nombre,
-            href: `/${item.ruta}`,
+            href: item.ruta === 'dashboard' ? route('dashboard') : route(item.ruta + '.index'),
             icon: IconComponent,
         };
     });

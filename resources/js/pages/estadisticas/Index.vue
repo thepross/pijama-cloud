@@ -48,12 +48,18 @@ interface ClaimsRatio {
     rechazado: number;
 }
 
+interface PageVisit {
+    pagina: string;
+    visitas: number;
+}
+
 const props = defineProps<{
     kpis: KpiType;
     ventas_diarias: TrendPoint[];
     mejores_productos: BestProduct[];
     ventas_categorias: CategorySales[];
     reclamos_ratio: ClaimsRatio;
+    paginas_mas_visitadas: PageVisit[];
     filters: { fecha_inicio: string; fecha_fin: string };
 }>();
 
@@ -77,10 +83,12 @@ const refreshData = () => {
 const salesChartCanvas = ref<HTMLCanvasElement | null>(null);
 const categoriesChartCanvas = ref<HTMLCanvasElement | null>(null);
 const claimsChartCanvas = ref<HTMLCanvasElement | null>(null);
+const pageVisitsChartCanvas = ref<HTMLCanvasElement | null>(null);
 
 let salesChart: Chart | null = null;
 let categoriesChart: Chart | null = null;
 let claimsChart: Chart | null = null;
+let pageVisitsChart: Chart | null = null;
 
 const initSalesChart = () => {
     if (!salesChartCanvas.value) return;
@@ -306,16 +314,90 @@ const initClaimsChart = () => {
     });
 };
 
+const initPageVisitsChart = () => {
+    if (!pageVisitsChartCanvas.value) return;
+    
+    if (pageVisitsChart) {
+        pageVisitsChart.destroy();
+    }
+    
+    const ctx = pageVisitsChartCanvas.value.getContext('2d');
+    if (!ctx) return;
+    
+    const labels = props.paginas_mas_visitadas.map(item => item.pagina);
+    const data = props.paginas_mas_visitadas.map(item => item.visitas);
+    
+    pageVisitsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Visitas',
+                data,
+                backgroundColor: 'rgba(99, 102, 241, 0.85)',
+                borderColor: '#6366f1',
+                borderWidth: 1.5,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ' + context.raw + ' visitas';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    border: {
+                        dash: [5, 5]
+                    },
+                    grid: {
+                        color: 'rgba(156, 163, 175, 0.15)'
+                    },
+                    ticks: {
+                        precision: 0,
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+
 onMounted(() => {
     initSalesChart();
     initCategoriesChart();
     initClaimsChart();
+    initPageVisitsChart();
 });
 
 onUnmounted(() => {
     if (salesChart) salesChart.destroy();
     if (categoriesChart) categoriesChart.destroy();
     if (claimsChart) claimsChart.destroy();
+    if (pageVisitsChart) pageVisitsChart.destroy();
 });
 
 watch(() => props.ventas_diarias, () => {
@@ -328,6 +410,10 @@ watch(() => props.ventas_categorias, () => {
 
 watch(() => props.reclamos_ratio, () => {
     initClaimsChart();
+}, { deep: true });
+
+watch(() => props.paginas_mas_visitadas, () => {
+    initPageVisitsChart();
 }, { deep: true });
 
 
@@ -347,9 +433,7 @@ const printReport = () => {
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Reportes y Estadísticas
                     </h1>
-                    <p class="text-sm text-muted-foreground mt-1">
-                        Analiza las métricas comerciales de la tienda de pijamas, ingresos, productos vendidos y gestión de reclamos.
-                    </p>
+
                 </div>
                 <div class="flex items-center gap-2">
                     <Button variant="outline" size="sm" @click="refreshData" class="rounded-xl shadow-sm h-10">
@@ -469,9 +553,7 @@ const printReport = () => {
                         <h2 class="text-lg font-bold text-foreground">
                             Evolución Diaria de Ventas
                         </h2>
-                        <p class="text-xs text-muted-foreground">
-                            Ingresos económicos percibidos por día en el rango de fechas seleccionado.
-                        </p>
+
                     </div>
 
                     
@@ -486,9 +568,7 @@ const printReport = () => {
                         <h2 class="text-lg font-bold text-foreground">
                             Ventas por Categoría
                         </h2>
-                        <p class="text-xs text-muted-foreground">
-                            Distribución de ingresos generados por cada línea textil.
-                        </p>
+
                     </div>
 
                     
@@ -507,9 +587,7 @@ const printReport = () => {
                         <h2 class="text-lg font-bold text-foreground">
                             Top 5 Productos Más Vendidos
                         </h2>
-                        <p class="text-xs text-muted-foreground">
-                            Los productos de pijama con mayor volumen de unidades vendidas.
-                        </p>
+
                     </div>
 
                     <div class="rounded-xl border border-border overflow-hidden bg-card">
@@ -563,14 +641,28 @@ const printReport = () => {
                         <h2 class="text-lg font-bold text-foreground">
                             Métricas de Reclamos
                         </h2>
-                        <p class="text-xs text-muted-foreground">
-                            Tasa de resolución y distribución del estado de quejas.
-                        </p>
+
                     </div>
 
                     
                     <div class="relative w-full h-[220px] p-2">
                         <canvas ref="claimsChartCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page visits chart row -->
+            <div class="grid grid-cols-1 gap-6 print:gap-4">
+                <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 flex flex-col justify-between print:shadow-none">
+                    <div>
+                        <h2 class="text-lg font-bold text-foreground">
+                            Páginas y Casos de Uso Más Visitados
+                        </h2>
+
+                    </div>
+
+                    <div class="relative w-full h-[280px] bg-muted/20 border border-border/50 rounded-xl p-3">
+                        <canvas ref="pageVisitsChartCanvas"></canvas>
                     </div>
                 </div>
             </div>

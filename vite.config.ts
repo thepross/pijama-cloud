@@ -6,6 +6,7 @@ import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    base: '/inf513/grupo30sa/proyecto2/public/build/',
     plugins: [
         laravel({
             input: ['resources/js/app.ts'],
@@ -20,12 +21,9 @@ export default defineConfig({
             },
         }),
     ],
-    server: {
-        host: '0.0.0.0',
-        hmr: {
-            host: '192.168.100.55',
-        }
-    },
+    // server: {
+    //     host: '0.0.0.0',
+    // },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),

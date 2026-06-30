@@ -135,7 +135,7 @@ const submitContactForm = (e: Event) => {
                             aspecto visual ideal con el cambiador de temas integrados para Niños, Jóvenes y Adultos.
                         </p>
                         <div class="flex flex-wrap justify-center lg:justify-start gap-4">
-                            <Link :href="$page.props.auth && $page.props.auth.user ? '/productos' : route('login')">
+                            <Link :href="$page.props.auth && $page.props.auth.user ? route('productos.index') : route('login')">
                                 <Button size="lg" class="gap-2 font-semibold shadow-md">
                                     Ver Catálogo de Pijamas
                                     <ShoppingBag class="h-5 w-5" />

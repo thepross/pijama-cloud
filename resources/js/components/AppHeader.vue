@@ -31,16 +31,35 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage();
 const auth = computed(() => page.props.auth);
 
+const formattedBreadcrumbs = computed(() => {
+    const baseUrl = route('home');
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return (props.breadcrumbs || []).map(item => {
+        if (item.href && item.href.startsWith('/')) {
+            return {
+                ...item,
+                href: cleanBase + item.href,
+            };
+        }
+        return item;
+    });
+});
+
 const isCurrentRoute = (url: string) => {
-    return page.url === url;
+    try {
+        const urlObj = new URL(url, window.location.origin);
+        return window.location.pathname === urlObj.pathname;
+    } catch {
+        return window.location.pathname === url;
+    }
 };
 
 const activeItemStyles = computed(() => (url: string) => (isCurrentRoute(url) ? 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : ''));
 
-const mainNavItems: NavItem[] = [
+const mainNavItems = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: route('dashboard'),
         icon: LayoutGrid,
     },
 ];
@@ -180,9 +199,9 @@ const rightNavItems: NavItem[] = [
             </div>
         </div>
 
-        <div v-if="props.breadcrumbs.length > 1" class="flex w-full border-b border-sidebar-border/70">
+        <div v-if="formattedBreadcrumbs.length > 1" class="flex w-full border-b border-sidebar-border/70">
             <div class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
-                <Breadcrumbs :breadcrumbs="breadcrumbs" />
+                <Breadcrumbs :breadcrumbs="formattedBreadcrumbs" />
             </div>
         </div>
     </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,13 +20,23 @@ const props = defineProps<{
     results: SearchResult[];
 }>();
 
+const page = usePage();
 const localQuery = ref(props.query || '');
 const activeTab = ref('Todos');
 
 const triggerSearch = () => {
     if (localQuery.value.trim().length >= 2) {
-        router.get('/buscar', { query: localQuery.value.trim() }, { preserveState: true });
+        router.get(route('buscar'), { query: localQuery.value.trim() }, { preserveState: true });
     }
+};
+
+const formatLink = (link: string) => {
+    if (link && link.startsWith('/')) {
+        const baseUrl = route('home');
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return cleanBase + link;
+    }
+    return link;
 };
 
 const filteredResults = computed(() => {
@@ -92,7 +102,7 @@ const getTypeBadgeClass = (type: string) => {
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="[{ title: 'Buscador', href: '/buscar' }]">
+    <AppLayout :breadcrumbs="[{ title: 'Buscador', href: route('buscar') }]">
         <Head title="Resultados de Búsqueda" />
 
         <div class="space-y-6 max-w-7xl mx-auto">
@@ -184,7 +194,7 @@ const getTypeBadgeClass = (type: string) => {
                                     {{ item.description }}
                                 </td>
                                 <td class="p-4 text-right">
-                                    <Link :href="item.link">
+                                    <Link :href="formatLink(item.link)">
                                         <Button variant="outline" size="sm" class="h-8 px-3 rounded-lg flex items-center gap-1 hover:bg-primary hover:text-primary-foreground group">
                                             <span>Ir</span>
                                             <ArrowRight class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

@@ -519,7 +519,7 @@ const statusColor: Record<string, string> = {
 
                 
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <Link href="/pedidos" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('pedidos.index')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 transition-transform group-hover:scale-110">
                             <ShoppingCart class="h-5 w-5" />
                         </span>
@@ -528,7 +528,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[11px] text-muted-foreground">Ver ventas y estados</p>
                         </div>
                     </Link>
-                    <Link href="/productos" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('productos.index')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 transition-transform group-hover:scale-110">
                             <Package class="h-5 w-5" />
                         </span>
@@ -537,7 +537,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[11px] text-muted-foreground">Stock y catálogo</p>
                         </div>
                     </Link>
-                    <Link href="/reclamos" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('reclamos.index')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500 transition-transform group-hover:scale-110">
                             <AlertCircle class="h-5 w-5" />
                         </span>
@@ -546,7 +546,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[11px] text-muted-foreground">Responder a clientes</p>
                         </div>
                     </Link>
-                    <Link href="/estadisticas" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('estadisticas.index')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 transition-transform group-hover:scale-110">
                             <BarChart2 class="h-5 w-5" />
                         </span>
@@ -627,7 +627,7 @@ const statusColor: Record<string, string> = {
                                 <ShoppingCart class="h-4 w-4 text-indigo-500" />
                                 <CardTitle class="text-base font-bold text-foreground">Mis Últimos Pedidos</CardTitle>
                             </div>
-                            <Link href="/pedidos" class="text-xs text-primary hover:underline flex items-center gap-0.5">
+                            <Link :href="route('pedidos.index')" class="text-xs text-primary hover:underline flex items-center gap-0.5">
                                 Ver todos
                                 <ArrowUpRight class="h-3 w-3" />
                             </Link>
@@ -673,7 +673,7 @@ const statusColor: Record<string, string> = {
 
                 
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
-                    <Link href="/pedidos/create" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('pedidos.create')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 transition-transform group-hover:scale-110">
                             <ShoppingCart class="h-5 w-5" />
                         </span>
@@ -682,7 +682,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[11px] text-muted-foreground">Nueva orden de pijamas</p>
                         </div>
                     </Link>
-                    <Link href="/reclamos/create" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('reclamos.create')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500 transition-transform group-hover:scale-110">
                             <MessageSquare class="h-5 w-5" />
                         </span>
@@ -691,7 +691,7 @@ const statusColor: Record<string, string> = {
                             <p class="text-[11px] text-muted-foreground">Reportar inconveniente</p>
                         </div>
                     </Link>
-                    <Link href="/productos" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('productos.index')" class="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 transition-transform group-hover:scale-110">
                             <Star class="h-5 w-5" />
                         </span>
@@ -767,7 +767,7 @@ const statusColor: Record<string, string> = {
                                 <Truck class="h-4 w-4 text-indigo-500" />
                                 <CardTitle class="text-base font-bold text-foreground">Últimos Envíos Asignados</CardTitle>
                             </div>
-                            <Link href="/envios" class="text-xs text-primary hover:underline flex items-center gap-0.5">
+                            <Link :href="route('envios.index')" class="text-xs text-primary hover:underline flex items-center gap-0.5">
                                 Ver todos
                                 <ArrowUpRight class="h-3 w-3" />
                             </Link>
@@ -795,7 +795,7 @@ const statusColor: Record<string, string> = {
 
                 
                 <div>
-                    <Link href="/envios" class="flex items-center justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md">
+                    <Link :href="route('envios.index')" class="flex items-center justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md">
                         <div class="flex items-center gap-3">
                             <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                                 <Truck class="h-6 w-6" />

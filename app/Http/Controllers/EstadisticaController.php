@@ -116,6 +116,40 @@ class EstadisticaController extends Controller
             'rechazado' => $reclamosEstados['rechazado'] ?? 0,
         ];
 
+        $paginasMasVisitadas = Bitacora::where('evento', 'acceso_recurso')
+            ->whereBetween('created_at', [$fechaInicio.' 00:00:00', $fechaFin.' 23:59:59'])
+            ->get()
+            ->groupBy(function ($item) {
+                $parts = explode('/', $item->recurso);
+                $base = $parts[0] ?? '';
+                switch ($base) {
+                    case 'usuarios': return 'Usuarios';
+                    case 'roles': return 'Roles';
+                    case 'productos': return 'Productos';
+                    case 'ofertas': return 'Ofertas';
+                    case 'pedidos': return 'Pedidos';
+                    case 'envios': return 'Envíos';
+                    case 'pagos': return 'Pagos';
+                    case 'reclamos': return 'Reclamos';
+                    case 'bitacoras': return 'Bitácora';
+                    case 'estadisticas': return 'Estadísticas';
+                    case 'dashboard': return 'Dashboard';
+                    case 'inicio': return 'Inicio';
+                    case 'buscar':
+                    case 'global-search': return 'Buscador';
+                    case 'settings': return 'Ajustes';
+                    case 'login': return 'Iniciar Sesión';
+                    default: return 'Otros ('.($base ?: 'N/A').')';
+                }
+            })
+            ->map(function ($group) {
+                return $group->count();
+            })
+            ->sortByDesc(fn ($count) => $count)
+            ->map(fn ($count, $name) => ['pagina' => $name, 'visitas' => $count])
+            ->values()
+            ->toArray();
+
         Bitacora::create([
             'id_usuario' => Auth::id(),
             'evento' => 'ver_reportes',
@@ -139,6 +173,7 @@ class EstadisticaController extends Controller
             'mejores_productos' => $mejoresProductos,
             'ventas_categorias' => $ventasCategorias,
             'reclamos_ratio' => $reclamosRatio,
+            'paginas_mas_visitadas' => $paginasMasVisitadas,
             'filters' => [
                 'fecha_inicio' => $fechaInicio,
                 'fecha_fin' => $fechaFin,

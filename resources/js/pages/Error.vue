@@ -53,7 +53,7 @@ const errorDetails = computed(() => {
 
             <!-- Action Button -->
             <div class="pt-4">
-                <Link href="/dashboard">
+                <Link :href="route('dashboard')">
                     <Button class="rounded-xl px-6 h-10 gap-2 shadow-sm">
                         <ArrowLeft class="h-4 w-4" />
                         Volver al Dashboard

@@ -6,16 +6,40 @@ import { Button } from '@/components/ui/button';
 import { Paintbrush, Search, Loader2, Users, Shield, Archive, HelpCircle, ShoppingBag, Truck, CreditCard, AlertTriangle, Tag } from 'lucide-vue-next';
 import ThemeController from '@/components/ThemeController.vue';
 import type { BreadcrumbItemType } from '@/types';
-import { ref, watch } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { Input } from '@/components/ui/input';
 
-defineProps<{
+const props = defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
 }>();
 
+const page = usePage();
+const formattedBreadcrumbs = computed(() => {
+    const baseUrl = route('home');
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return (props.breadcrumbs || []).map(item => {
+        if (item.href && item.href.startsWith('/')) {
+            return {
+                ...item,
+                href: cleanBase + item.href,
+            };
+        }
+        return item;
+    });
+});
+
 const searchQuery = ref('');
 const searchResults = ref<any[]>([]);
+
+const formatLink = (link: string) => {
+    if (link && link.startsWith('/')) {
+        const baseUrl = route('home');
+        const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        return cleanBase + link;
+    }
+    return link;
+};
 const isSearching = ref(false);
 const showResults = ref(false);
 
@@ -28,7 +52,7 @@ const performSearch = async () => {
     }
     isSearching.value = true;
     try {
-        const response = await fetch(`/global-search?query=${encodeURIComponent(searchQuery.value)}`);
+        const response = await fetch(route('global-search', { query: searchQuery.value }));
         if (response.ok) {
             searchResults.value = await response.json();
         }
@@ -53,7 +77,7 @@ watch(searchQuery, (newVal) => {
 const triggerFullSearch = () => {
     if (searchQuery.value.trim().length >= 2) {
         showResults.value = false;
-        router.visit(`/buscar?query=${encodeURIComponent(searchQuery.value.trim())}`);
+        router.visit(route('buscar', { query: searchQuery.value.trim() }));
     }
 };
 
@@ -84,12 +108,12 @@ const getIcon = (iconName: string) => {
     >
         <div class="flex items-center gap-2">
             <SidebarTrigger class="-ml-1" />
-            <template v-if="breadcrumbs && breadcrumbs.length > 0">
+            <template v-if="formattedBreadcrumbs.length > 0">
                 <Breadcrumb>
                     <BreadcrumbList>
-                        <template v-for="(item, index) in breadcrumbs" :key="index">
+                        <template v-for="(item, index) in formattedBreadcrumbs" :key="index">
                             <BreadcrumbItem>
-                                <template v-if="index === breadcrumbs.length - 1">
+                                <template v-if="index === formattedBreadcrumbs.length - 1">
                                     <BreadcrumbPage>{{ item.title }}</BreadcrumbPage>
                                 </template>
                                 <template v-else>
@@ -98,7 +122,7 @@ const getIcon = (iconName: string) => {
                                     </BreadcrumbLink>
                                 </template>
                             </BreadcrumbItem>
-                            <BreadcrumbSeparator v-if="index !== breadcrumbs.length - 1" />
+                            <BreadcrumbSeparator v-if="index !== formattedBreadcrumbs.length - 1" />
                         </template>
                     </BreadcrumbList>
                 </Breadcrumb>
@@ -135,7 +159,7 @@ const getIcon = (iconName: string) => {
                         <Link
                             v-for="item in searchResults"
                             :key="item.id + '-' + item.type"
-                            :href="item.link"
+                            :href="formatLink(item.link)"
                             class="flex items-start gap-2.5 rounded-md p-2 hover:bg-accent hover:text-accent-foreground text-left transition-colors"
                             @click="showResults = false"
                         >

@@ -228,9 +228,7 @@ function formatDate(d: string): string {
                     <h1 class="text-3xl font-bold tracking-tight text-foreground">
                         Bitácora de Eventos
                     </h1>
-                    <p class="text-sm text-muted-foreground mt-1">
-                        Auditoría y registro completo de accesos, modificaciones, altas y bajas realizadas en el sistema.
-                    </p>
+
                 </div>
                 <div>
                     <Button variant="outline" size="sm" @click="clearFilters" class="h-10 rounded-xl gap-1.5 shadow-sm border-border bg-card">
@@ -241,77 +239,7 @@ function formatDate(d: string): string {
             </div>
 
             
-            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                
-                <Card class="hover:scale-[1.01] transition-transform">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Eventos</CardTitle>
-                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500">
-                            <Activity class="h-4 w-4" />
-                        </span>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-black text-foreground font-mono">
-                            {{ kpis.total_registros }}
-                        </div>
-                        <p class="mt-1 text-xs text-muted-foreground">registrados en total</p>
-                    </CardContent>
-                </Card>
 
-                
-                <Card class="hover:scale-[1.01] transition-transform">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Modificaciones</CardTitle>
-                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
-                            <FileText class="h-4 w-4" />
-                        </span>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
-                            {{ kpis.acciones_modificacion }}
-                        </div>
-                        <p class="mt-1 text-xs text-muted-foreground">creaciones / ediciones / bajas</p>
-                    </CardContent>
-                </Card>
-
-                
-                <Card class="hover:scale-[1.01] transition-transform">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Usuario Más Activo</CardTitle>
-                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/10 text-violet-500">
-                            <User class="h-4 w-4" />
-                        </span>
-                    </CardHeader>
-                    <CardContent>
-                        <div v-if="kpis.usuario_activo" class="truncate text-base font-black text-foreground" :title="kpis.usuario_activo.name">
-                            {{ kpis.usuario_activo.name }}
-                        </div>
-                        <div v-else class="text-sm font-bold text-muted-foreground">-</div>
-                        <p class="mt-1 text-xs text-muted-foreground font-mono" v-if="kpis.usuario_activo">
-                            {{ kpis.usuario_activo.count }} eventos registrados
-                        </p>
-                    </CardContent>
-                </Card>
-
-                
-                <Card class="hover:scale-[1.01] transition-transform">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Evento Frecuente</CardTitle>
-                        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
-                            <Terminal class="h-4 w-4" />
-                        </span>
-                    </CardHeader>
-                    <CardContent>
-                        <div v-if="kpis.evento_frecuente" class="truncate text-xs font-bold text-foreground capitalize" :title="kpis.evento_frecuente.evento">
-                            {{ humanizeEvent(kpis.evento_frecuente.evento) }}
-                        </div>
-                        <div v-else class="text-sm font-bold text-muted-foreground">-</div>
-                        <p class="mt-1 text-xs text-muted-foreground font-mono" v-if="kpis.evento_frecuente">
-                            {{ kpis.evento_frecuente.count }} repeticiones
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
 
             
             <div class="p-5 rounded-xl border border-border bg-card shadow-sm space-y-4">
@@ -504,101 +432,58 @@ function formatDate(d: string): string {
                         <Terminal class="h-5 w-5 text-primary" />
                         Detalle del Evento #{{ selectedLog?.id }}
                     </DialogTitle>
-                    <DialogDescription>
-                        Información completa de auditoría registrada para esta acción del sistema.
-                    </DialogDescription>
+
                 </DialogHeader>
 
-                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                    
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1 text-sm">
                     <div class="grid grid-cols-2 gap-4 bg-muted/30 p-4 rounded-xl border border-border/40 text-xs">
                         <div class="space-y-1">
-                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Fecha de Registro</span>
+                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Fecha</span>
                             <span class="text-foreground font-medium font-mono" v-if="selectedLog">
                                 {{ formatDate(selectedLog.created_at) }}
                             </span>
                         </div>
                         <div class="space-y-1">
-                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Tipo de Evento</span>
+                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Usuario</span>
+                            <span class="text-foreground font-medium font-mono" v-if="selectedLog?.usuario">
+                                @{{ selectedLog.usuario.username }} ({{ selectedLog.usuario.role?.nombre || 'Sin Rol' }})
+                            </span>
+                            <span class="text-foreground italic" v-else>Sistema (Invitado)</span>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Evento</span>
                             <span :class="['inline-flex items-center px-2 py-0.5 rounded-full font-bold border capitalize text-[10px]', selectedLog ? getEventBadgeColor(selectedLog.evento) : '']">
                                 {{ selectedLog ? humanizeEvent(selectedLog.evento) : '' }}
                             </span>
                         </div>
                         <div class="space-y-1">
-                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Dirección IP</span>
-                            <span class="text-foreground font-mono font-medium">{{ selectedLog?.ip || 'Local/Desconocida' }}</span>
+                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">IP / Origen</span>
+                            <span class="text-foreground font-mono font-medium">{{ selectedLog?.ip || '-' }}</span>
                         </div>
-                        <div class="space-y-1">
-                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Módulo / Ruta</span>
-                            <span class="text-foreground font-mono font-medium truncate block" :title="selectedLog?.recurso">{{ selectedLog?.recurso || '-' }}</span>
-                        </div>
-                    </div>
-
-                    
-                    <div class="p-4 border border-border bg-card rounded-xl">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-                            <User class="h-3.5 w-3.5 text-primary" />
-                            Actor (Usuario Responsable)
-                        </h4>
-                        <div v-if="selectedLog?.usuario" class="flex items-center justify-between text-xs">
-                            <div>
-                                <p class="text-sm font-black text-foreground">{{ selectedLog.usuario.nombre }} {{ selectedLog.usuario.apellido }}</p>
-                                <p class="text-muted-foreground font-mono mt-0.5">@{{ selectedLog.usuario.username }}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-bold bg-primary/10 text-primary uppercase text-[10px]">
-                                    {{ selectedLog.usuario.role?.nombre || 'Sin Rol' }}
-                                </span>
-                                <Link :href="route('usuarios.index', { search: selectedLog.usuario.username })" class="block text-[11px] text-indigo-500 hover:underline mt-1 font-semibold">
-                                    Ver perfil usuario →
-                                </Link>
-                            </div>
-                        </div>
-                        <div v-else class="flex items-center gap-2 text-xs text-muted-foreground italic py-1">
-                            <Laptop class="h-4 w-4" />
-                            Acción realizada por un usuario invitado o un proceso automatizado del sistema.
+                        <div class="col-span-2 space-y-1">
+                            <span class="text-muted-foreground font-bold uppercase tracking-wider block">Ruta / Recurso</span>
+                            <span class="text-foreground font-mono font-medium break-all block" :title="selectedLog?.recurso">{{ selectedLog?.recurso || '-' }}</span>
                         </div>
                     </div>
 
-                    
-                    <div class="p-4 border border-border bg-card rounded-xl text-xs space-y-2">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                            <HardDrive class="h-3.5 w-3.5 text-primary" />
-                            Dispositivo & Agente de Usuario
+                    <div v-if="selectedLog?.detalle" class="p-4 border border-border bg-card rounded-xl space-y-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Datos del Registro
                         </h4>
-                        <p class="font-medium text-foreground flex items-center gap-1.5">
-                            <Laptop class="h-3.5 w-3.5 text-muted-foreground" />
-                            {{ parseUserAgent(selectedLog?.user_agent ?? null) }}
-                        </p>
-                        <p class="font-mono text-[10px] text-muted-foreground bg-muted/40 p-2.5 rounded border border-border/30 select-all break-all">
-                            {{ selectedLog?.user_agent }}
-                        </p>
-                    </div>
-
-                    
-                    <div class="p-4 border border-border bg-card rounded-xl space-y-3">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                            <FileText class="h-3.5 w-3.5 text-primary" />
-                            Carga de Datos / Detalle Técnico
-                        </h4>
-
-                        
-                        <div v-if="parsedDetails" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <div v-if="parsedDetails" class="space-y-1 text-xs font-mono max-h-48 overflow-y-auto">
                             <div
                                 v-for="(val, key) in parsedDetails"
                                 :key="key"
-                                class="grid grid-cols-3 gap-2 border-b border-border/40 pb-1.5 last:border-0 last:pb-0 text-xs font-mono"
+                                class="flex gap-2 py-0.5 border-b border-border/20 last:border-0"
                             >
-                                <span class="text-muted-foreground font-semibold truncate">{{ key }}</span>
-                                <span class="col-span-2 text-foreground font-medium select-all break-all">
+                                <span class="text-muted-foreground font-semibold min-w-[120px] truncate">{{ key }}:</span>
+                                <span class="text-foreground font-medium break-all flex-1">
                                     {{ typeof val === 'object' ? JSON.stringify(val) : val }}
                                 </span>
                             </div>
                         </div>
-
-                        
-                        <div v-else class="font-mono text-xs select-all text-muted-foreground bg-muted/40 p-3 rounded border border-border/30 break-all whitespace-pre-wrap max-h-48 overflow-y-auto">
-                            {{ selectedLog?.detalle || 'Sin parámetros de detalle registrados.' }}
+                        <div v-else class="font-mono text-xs text-muted-foreground bg-muted/40 p-3 rounded border border-border/30 break-all whitespace-pre-wrap max-h-48 overflow-y-auto">
+                            {{ selectedLog.detalle }}
                         </div>
                     </div>
                 </div>
