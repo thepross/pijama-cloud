@@ -15,7 +15,7 @@ class PagoFacilService
         $serviceToken = config('services.pagofacil.service_token');
         $secretToken = config('services.pagofacil.secret_token');
 
-        if (! $serviceToken || ! $secretToken) {
+        if (!$serviceToken || !$secretToken) {
             throw new \Exception('Las credenciales de PagoFacil (PAGOFACIL_SERVICE_TOKEN, PAGOFACIL_SECRET_TOKEN) no están configuradas en el entorno.');
         }
 
@@ -34,9 +34,9 @@ class PagoFacilService
 
         $data = $response->json();
 
-        if (($data['error'] ?? 1) !== 0 || ! isset($data['values']['accessToken'])) {
+        if (($data['error'] ?? 1) !== 0 || !isset($data['values']['accessToken'])) {
             Log::error('PagoFacil Authentication Error', $data);
-            throw new \Exception('Autenticación fallida con PagoFacil: '.($data['message'] ?? 'Error desconocido'));
+            throw new \Exception('Autenticación fallida con PagoFacil: ' . ($data['message'] ?? 'Error desconocido'));
         }
 
         return $data['values']['accessToken'];
@@ -53,7 +53,7 @@ class PagoFacilService
         $clientCI = $cliente ? $cliente->ci : '1000000';
         $clientPhone = $cliente ? ($cliente->telefono ?? '70000000') : '70000000';
         $clientEmail = $cliente ? $cliente->email : 'cliente@pijama.com';
-        $paymentCode = "QR-PIJ-{$pago->id}".'-'.strtoupper(uniqid());
+        $paymentCode = "QR-PIJ-{$pago->id}" . '-' . strtoupper(uniqid());
 
         $body = [
             'paymentMethod' => 34,
@@ -79,6 +79,7 @@ class PagoFacilService
             ],
         ];
 
+        dd($body);
         $response = Http::withToken($token)
             ->post("{$baseUrl}/generate-qr", $body);
 
@@ -92,9 +93,9 @@ class PagoFacilService
 
         $data = $response->json();
 
-        if (($data['error'] ?? 1) !== 0 || ! isset($data['values']['qrBase64'])) {
+        if (($data['error'] ?? 1) !== 0 || !isset($data['values']['qrBase64'])) {
             Log::error('PagoFacil QR Generation Error', $data);
-            throw new \Exception('No se pudo generar el código QR: '.($data['message'] ?? 'Error desconocido'));
+            throw new \Exception('No se pudo generar el código QR: ' . ($data['message'] ?? 'Error desconocido'));
         }
 
         return [
@@ -123,9 +124,9 @@ class PagoFacilService
 
         $data = $response->json();
 
-        if (($data['error'] ?? 1) !== 0 || ! isset($data['values'])) {
+        if (($data['error'] ?? 1) !== 0 || !isset($data['values'])) {
             Log::error('PagoFacil Query Transaction Error', $data);
-            throw new \Exception('No se pudo obtener información de la transacción: '.($data['message'] ?? 'Error desconocido'));
+            throw new \Exception('No se pudo obtener información de la transacción: ' . ($data['message'] ?? 'Error desconocido'));
         }
 
         return $data['values'];
@@ -155,7 +156,7 @@ class PagoFacilService
                     'id_usuario' => $pago->pedido->id_cliente,
                     'evento' => 'callback_pagofacil',
                     'ip' => request()->ip() ?? '127.0.0.1',
-                    'recurso' => 'pagos/'.$pago->id,
+                    'recurso' => 'pagos/' . $pago->id,
                     'detalle' => json_encode([
                         'id' => $pago->id,
                         'gateway' => 'pagofacil_real',
@@ -176,7 +177,7 @@ class PagoFacilService
                     'id_usuario' => $pago->pedido->id_cliente,
                     'evento' => 'callback_pagofacil',
                     'ip' => request()->ip() ?? '127.0.0.1',
-                    'recurso' => 'pagos/'.$pago->id,
+                    'recurso' => 'pagos/' . $pago->id,
                     'detalle' => json_encode([
                         'id' => $pago->id,
                         'gateway' => 'pagofacil_real',
@@ -205,7 +206,7 @@ class PagoFacilService
                     'id_usuario' => $pago->pedido->id_cliente,
                     'evento' => 'callback_pagofacil',
                     'ip' => request()->ip() ?? '127.0.0.1',
-                    'recurso' => 'pagos/'.$pago->id,
+                    'recurso' => 'pagos/' . $pago->id,
                     'detalle' => json_encode([
                         'id' => $pago->id,
                         'gateway' => 'pagofacil_real',
@@ -220,7 +221,7 @@ class PagoFacilService
             }
 
         } catch (\Exception $e) {
-            Log::warning("Error verificando estado del pago QR #{$pago->id}: ".$e->getMessage());
+            Log::warning("Error verificando estado del pago QR #{$pago->id}: " . $e->getMessage());
         }
 
         return false;

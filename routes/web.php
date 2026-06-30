@@ -6,6 +6,7 @@ use App\Http\Controllers\EnvioController;
 use App\Http\Controllers\EstadisticaController;
 use App\Http\Controllers\OfertaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PagoFacilWebHookController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\PuntuacionController;
@@ -39,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
     Route::get('bitacoras', [BitacoraController::class, 'index'])->name('bitacoras.index');
 });
+
+Route::post('/pagofacil/callback', [PagoFacilWebHookController::class, 'callback'])
+    ->name('pagofacil.callback');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

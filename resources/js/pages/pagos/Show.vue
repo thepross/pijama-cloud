@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
     ArrowLeft, CheckCircle, Ban, AlertTriangle, LoaderCircle, Printer, QrCode,
-    ShieldAlert, Banknote, CreditCard, Clock, Calendar, ShoppingBag, User
+    ShieldAlert, Banknote, CreditCard, Clock, Calendar, ShoppingBag, User, RefreshCw
 } from 'lucide-vue-next';
 
 interface UserType {
@@ -100,6 +100,17 @@ const formManual = useForm({
     estado_pago: 'completado',
     observacion: props.pago.observacion || '',
 });
+
+const reloading = ref(false);
+const checkPaymentStatus = () => {
+    reloading.value = true;
+    router.reload({
+        only: ['pago', 'flash'],
+        onFinish: () => {
+            reloading.value = false;
+        }
+    });
+};
 
 const triggerCallback = () => {
     formCallback.post(route('pagos.simular-callback', props.pago.id), {
@@ -319,11 +330,19 @@ const printReceipt = () => {
                             <span>Esperando confirmación de cobro...</span>
                         </div>
 
-                        <Button @click="triggerCallback" :disabled="formCallback.processing || timeLeft === 0"
+                        <Button @click="checkPaymentStatus" :disabled="reloading || timeLeft === 0"
                             class="w-full flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 shadow-sm transition-transform hover:scale-[1.02]">
+                            <LoaderCircle v-if="reloading" class="h-4 w-4 animate-spin" />
+                            <RefreshCw v-else class="h-4 w-4" />
+                            Verificar Estado de Pago
+                        </Button>
+
+                        <Button v-if="isStaff" @click="triggerCallback" :disabled="formCallback.processing || timeLeft === 0"
+                            variant="outline"
+                            class="w-full flex items-center justify-center gap-1.5 rounded-xl font-bold py-2 border-dashed">
                             <LoaderCircle v-if="formCallback.processing" class="h-4 w-4 animate-spin" />
                             <QrCode v-else class="h-4 w-4" />
-                            Simular Escaneo y Pago
+                            Simular Callback
                         </Button>
                     </div>
 
