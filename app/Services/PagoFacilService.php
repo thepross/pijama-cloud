@@ -79,7 +79,7 @@ class PagoFacilService
             ],
         ];
 
-        dd($body);
+        // dd($body);
         $response = Http::withToken($token)
             ->post("{$baseUrl}/generate-qr", $body);
 
