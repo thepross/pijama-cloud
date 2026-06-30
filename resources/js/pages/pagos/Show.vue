@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -74,18 +74,23 @@ onMounted(() => {
                 timeLeft.value--;
                 if (timeLeft.value % 5 === 0) {
                     router.reload({
-                        only: ['pago', 'flash'],
-                        onSuccess: () => {
-                            if (props.pago.estado_pago === 'completado') {
-                                clearInterval(timerInterval);
-                            }
-                        }
+                        only: ['pago', 'flash']
                     });
                 }
             } else {
-                clearInterval(timerInterval);
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
             }
         }, 1000);
+    }
+});
+
+watch(() => props.pago.estado_pago, (newStatus) => {
+    if (newStatus !== 'pendiente' && timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
     }
 });
 
