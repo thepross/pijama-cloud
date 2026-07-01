@@ -17,35 +17,35 @@ class PagoFacilWebHookController extends Controller
         $transactionId = $data['TransactionID'] ?? $data['transactionId'] ?? $data['pagofacilTransactionId'] ?? $data['transaction_id'] ?? null;
         $pago = null;
 
-        // 1. Intentar buscar por transaction_id (el identificador único de la transacción de PagoFacil)
+        // Intentar buscar por transaction_id
         if ($transactionId) {
             $pago = Pago::where('transaction_id', $transactionId)->first();
         }
 
-        // 2. Si no se encontró por transaction_id, intentar buscar usando los patrones alternativos en PedidoID/paymentNumber
-        if (! $pago) {
+        // intentar buscar usando los patrones alternativos en PedidoID/paymentNumber
+        if (!$pago) {
             $pedidoID = $data['PedidoID'] ?? $data['paymentNumber'] ?? null;
 
             if ($pedidoID) {
-                // Caso A: Formato QR-PIJ-{pago_id}-XYZ
+                // Formato QR-PIJ-{pago_id}-XYZ
                 if (preg_match('/QR-PIJ-(\d+)/', $pedidoID, $m)) {
                     $pago = Pago::find($m[1]);
                 }
-                // Caso B: Formato V{pedido_id}-C{cuota_num}
+                // Formato V{pedido_id}-C{cuota_num}
                 elseif (preg_match('/V(\d+)-C(\d+)/', $pedidoID, $m)) {
                     $pago = Pago::where('id_pedido', $m[1])->where('numero_cuota', $m[2])->first();
                 }
-                // Caso C: Formato V{pedido_id}
+                // Formato V{pedido_id}
                 elseif (preg_match('/V(\d+)/', $pedidoID, $m)) {
                     $pago = Pago::where('id_pedido', $m[1])->where('estado_pago', '!=', 'completado')->first();
-                    if (! $pago) {
+                    if (!$pago) {
                         $pago = Pago::where('id_pedido', $m[1])->first();
                     }
                 }
             }
         }
 
-        // 3. Procesar y actualizar el pago si fue localizado
+        // Procesar el pago si fue encontrado
         if ($pago) {
             if ($pago->estado_pago !== 'completado') {
                 $totalPagado = Pago::where('id_pedido', $pago->id_pedido)
@@ -77,7 +77,7 @@ class PagoFacilWebHookController extends Controller
                     'id_usuario' => $pago->pedido->id_cliente,
                     'evento' => 'callback_pagofacil',
                     'ip' => $request->ip() ?? '127.0.0.1',
-                    'recurso' => 'pagos/'.$pago->id,
+                    'recurso' => 'pagos/' . $pago->id,
                     'detalle' => json_encode([
                         'id' => $pago->id,
                         'gateway' => 'pagofacil_webhook',
