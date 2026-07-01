@@ -118,10 +118,6 @@ const submitContactForm = (e: Event) => {
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     <!-- Left Copy Column -->
                     <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-                        <!-- <div class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary animate-pulse">
-                            <Sparkles class="h-3.5 w-3.5" />
-                            Colección Confort 2026 ya disponible
-                        </div> -->
                         <h1
                             class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]">
                             Tu descanso ideal, <br class="hidden sm:inline" />
@@ -135,7 +131,8 @@ const submitContactForm = (e: Event) => {
                             aspecto visual ideal con el cambiador de temas integrados para Niños, Jóvenes y Adultos.
                         </p>
                         <div class="flex flex-wrap justify-center lg:justify-start gap-4">
-                            <Link :href="$page.props.auth && $page.props.auth.user ? route('productos.index') : route('login')">
+                            <Link
+                                :href="$page.props.auth && $page.props.auth.user ? route('productos.index') : route('login')">
                                 <Button size="lg" class="gap-2 font-semibold shadow-md">
                                     Ver Catálogo de Pijamas
                                     <ShoppingBag class="h-5 w-5" />
@@ -152,7 +149,6 @@ const submitContactForm = (e: Event) => {
                     <div class="lg:col-span-5 flex justify-center lg:justify-end">
                         <div
                             class="relative w-full max-w-[420px] aspect-square rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-8 shadow-xl flex flex-col justify-between overflow-hidden">
-                            <!-- Visual Teaser of Pijamas Cloud Card -->
                             <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl"></div>
 
                             <div class="flex items-center justify-between">
@@ -168,7 +164,6 @@ const submitContactForm = (e: Event) => {
                             </div>
 
                             <div class="my-auto py-6 space-y-4">
-                                <!-- <span class="text-6xl">🛌☁️</span> -->
                                 <h3 class="text-2xl font-bold">Pijama Algodón Pima</h3>
                                 <p class="text-sm text-muted-foreground">
                                     Extra suave, hipoalergénica y térmica para noches inolvidables.
@@ -206,7 +201,6 @@ const submitContactForm = (e: Event) => {
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Feature 1: Dynamic Themes -->
                     <div
                         class="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow space-y-4">
                         <div class="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -221,7 +215,6 @@ const submitContactForm = (e: Event) => {
                         </p>
                     </div>
 
-                    <!-- Feature 2: High Contrast -->
                     <div
                         class="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow space-y-4">
                         <div class="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -235,7 +228,6 @@ const submitContactForm = (e: Event) => {
                         </p>
                     </div>
 
-                    <!-- Feature 3: Premium Catalog -->
                     <div
                         class="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow space-y-4">
                         <div class="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -252,7 +244,6 @@ const submitContactForm = (e: Event) => {
             </div>
         </section>
 
-        <!-- About Us Section -->
         <section id="acerca" class="py-16 md:py-24 border-b border-border/50">
             <div class="container mx-auto max-w-7xl px-4 sm:px-6">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -312,7 +303,6 @@ const submitContactForm = (e: Event) => {
             </div>
         </section>
 
-        <!-- Contact Section -->
         <section id="contacto" class="py-16 md:py-24 bg-muted/20">
             <div class="container mx-auto max-w-7xl px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto space-y-4 mb-16">
@@ -359,7 +349,6 @@ const submitContactForm = (e: Event) => {
                         </div>
                     </div>
 
-                    <!-- Contact form -->
                     <div class="lg:col-span-7">
                         <form @submit="submitContactForm"
                             class="border border-border rounded-2xl bg-card shadow-sm p-6 sm:p-8 space-y-5">
@@ -398,14 +387,12 @@ const submitContactForm = (e: Event) => {
             </div>
         </section>
 
-        <!-- Footer Section -->
         <footer class="mt-auto border-t border-border/80 bg-card py-8">
             <div
                 class="container mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-sm text-muted-foreground">
                 <div>
                     <p>&copy; 2026 Pijamas Cloud. Todos los derechos reservados.</p>
                 </div>
-                <!-- Dynamic visits counter (Requirement 7) -->
                 <div
                     class="flex items-center gap-1.5 font-medium text-foreground bg-muted px-3 py-1 rounded-full text-xs">
                     <span>👁️ Esta página ha sido visitada:</span>

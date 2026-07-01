@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class PagoFacilService
 {
+    private const MONTO_PRUEBA = 0.10;
     public function login(): string
     {
         $baseUrl = config('services.pagofacil.base_url');
@@ -63,7 +64,8 @@ class PagoFacilService
             'phoneNumber' => $clientPhone,
             'email' => $clientEmail,
             'paymentNumber' => $paymentCode,
-            'amount' => (float) $pago->monto,
+            // 'amount' => (float) $pago->monto,
+            'amount' => self::MONTO_PRUEBA,
             'currency' => 2,
             'clientCode' => "CLI-{$pedido->id_cliente}",
             'callbackUrl' => config('services.pagofacil.callback_url'),
@@ -72,9 +74,11 @@ class PagoFacilService
                     'serial' => 1,
                     'product' => "Abono Pedido #{$pago->id_pedido} (Cuota {$pago->numero_cuota}/{$pago->total_cuotas})",
                     'quantity' => 1,
-                    'price' => (float) $pago->monto,
+                    // 'price' => (float) $pago->monto,
+                    'price' => self::MONTO_PRUEBA,
                     'discount' => 0,
-                    'total' => (float) $pago->monto,
+                    // 'total' => (float) $pago->monto,
+                    'total' => self::MONTO_PRUEBA,
                 ],
             ],
         ];
