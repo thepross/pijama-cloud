@@ -60,6 +60,7 @@ const showDeleteDialog = ref(false);
 
 const timeLeft = ref(120);
 let timerInterval: any = null;
+const localEstadoPago = ref(props.pago.estado_pago);
 
 const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -68,7 +69,7 @@ const formatTime = (seconds: number) => {
 };
 
 onMounted(() => {
-    if (props.pago.tipo_pago === 'qr' && props.pago.estado_pago === 'pendiente') {
+    if (props.pago.tipo_pago === 'qr' && localEstadoPago.value === 'pendiente') {
         timerInterval = setInterval(() => {
             if (timeLeft.value > 0) {
                 timeLeft.value--;
@@ -88,11 +89,16 @@ onMounted(() => {
 });
 
 watch(() => props.pago.estado_pago, (newStatus) => {
-    if (newStatus !== 'pendiente' && timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
+    if (newStatus === 'completado' || newStatus === 'fallido') {
+        localEstadoPago.value = newStatus;
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    } else if (localEstadoPago.value === 'pendiente') {
+        localEstadoPago.value = newStatus;
     }
-});
+}, { immediate: true });
 
 onUnmounted(() => {
     if (timerInterval) {
@@ -187,14 +193,14 @@ const printReceipt = () => {
                             <span>Fecha: {{ props.pago.fecha_pago }}</span>
                             <span>•</span>
                             <span
-                                :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold', getStatusBadge(props.pago.estado_pago).class]">
-                                {{ getStatusBadge(props.pago.estado_pago).label }}
+                                :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold', getStatusBadge(localEstadoPago).class]">
+                                {{ getStatusBadge(localEstadoPago).label }}
                             </span>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Button v-if="props.pago.estado_pago === 'completado'" variant="outline" size="sm"
+                    <Button v-if="localEstadoPago === 'completado'" variant="outline" size="sm"
                         @click="printReceipt" class="flex items-center gap-1 rounded-xl">
                         <Printer class="h-4 w-4" />
                         Imprimir Recibo
@@ -305,7 +311,7 @@ const printReceipt = () => {
                 </div>
 
                 <div class="space-y-6">
-                    <div v-if="props.pago.tipo_pago === 'qr' && props.pago.estado_pago === 'pendiente'"
+                    <div v-if="props.pago.tipo_pago === 'qr' && localEstadoPago === 'pendiente'"
                         class="p-6 rounded-2xl border border-border bg-card shadow-sm text-center space-y-4 animate-in slide-in-from-right-2 fade-in">
                         <h3 class="text-sm font-bold text-foreground flex items-center justify-center gap-1.5">
                             <QrCode class="h-5 w-5 text-primary" />
@@ -351,7 +357,7 @@ const printReceipt = () => {
                         </Button>
                     </div>
 
-                    <div v-if="props.pago.tipo_pago === 'efectivo' && props.pago.estado_pago === 'pendiente'"
+                    <div v-if="props.pago.tipo_pago === 'efectivo' && localEstadoPago === 'pendiente'"
                         class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-4 animate-in slide-in-from-right-2 fade-in">
                         <h3 class="text-sm font-bold text-foreground flex items-center gap-1.5">
                             <Banknote class="h-5 w-5 text-primary" />
@@ -386,7 +392,7 @@ const printReceipt = () => {
                         </div>
                     </div>
 
-                    <div v-if="props.pago.estado_pago === 'completado'"
+                    <div v-if="localEstadoPago === 'completado'"
                         class="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-center space-y-4 animate-in slide-in-from-right-2 fade-in">
                         <div
                             class="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-900/50">
